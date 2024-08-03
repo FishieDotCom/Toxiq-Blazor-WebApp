@@ -1,0 +1,145 @@
+﻿@page "/profile/{username}"
+@using Toxiq.Mobile.Dto
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JSRuntime
+@using System.Web;
+
+
+<style>
+
+    .post-content {
+        font-weight: 500;
+        color: white;
+    }
+
+    .comment-container {
+        width: 100%;
+        background-color: #1f1f1f;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .comment-input {
+        flex: 1;
+        padding: 10px;
+        color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin-right: 10px;
+    }
+
+    .comment-submit {
+        padding: 10px 20px;
+        background-color: #1f1f1f;
+        color: white;
+        border: white;
+        border-width: thin;
+        border-style: solid;
+        border-radius: 10px;
+    }
+
+    .content {
+        padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
+    }
+</style>
+
+@if (myProfile == null)
+{
+    <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
+                     Type="card-avatar">
+    </MSkeletonLoader>
+}
+else
+{
+
+    <MCard Class="mx-auto" Color="@myProfile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
+        <MCardTitle>
+            <p class="text-h6 font-weight-light">@myProfile.Name</p>
+            <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@myProfile.UserName</p>
+
+            <MListItemTitle>
+                @myProfile.Bio
+            </MListItemTitle>
+
+
+
+        </MCardTitle>
+
+
+
+    </MCard>
+
+
+
+    <MSubheader Dark>
+        Achievements
+    </MSubheader>
+
+
+    <MCard Class="mx-auto"
+           Tile>
+        <MList Dark>
+            @foreach (var item in myProfile.Achievements)
+            {
+                <MListItem Dark>
+
+                    <MListItemAvatar>
+                        <MLabel>@item.Icon</MLabel>
+                    </MListItemAvatar>
+
+                    <MListItemContent>
+                        <MListItemTitle>@((MarkupString)item.Name)</MListItemTitle>
+                        <MListItemSubtitle>@((MarkupString)item.Description)</MListItemSubtitle>
+                        <MListItemSubtitle Style="opacity:0.5;">@((MarkupString)item.DateUnlocked.ToString("dd-MM-yyyy"))</MListItemSubtitle>
+                    </MListItemContent>
+
+
+                </MListItem>
+            }
+        </MList>
+    </MCard>
+
+}
+
+
+@code {
+    [Parameter]
+    public string? username { get; set; }
+
+    private bool IsAuth = false;
+
+    private List<Comment> Comments { get; set; } = new List<Comment>();
+    private UserProfile myProfile = null;
+
+    private string CommentContent = string.Empty;
+    private bool IsBusy = false;
+    private ElementReference inputElement;
+    private double initialWindowHeight;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var initData = await telegram.InitializeTelegramWebApp();
+            var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+            if (login.token != "NA")
+                IsAuth = true;
+
+            myProfile = await ApiService.UserService.GetUser(username);
+
+            StateHasChanged();
+        }
+
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    }
+}

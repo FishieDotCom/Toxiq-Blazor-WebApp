@@ -1,0 +1,267 @@
+﻿@page "/posts/"
+@page "/posts/{postId:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+@using Toxiq.Mobile.Dto
+@attribute [Authorize]
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JSRuntime
+@using System.Web;
+
+
+<style>
+
+    .post-content{
+        font-weight: 500;
+        color: white;
+    }
+
+    .comment-container {
+        width: 100%;
+        background-color: #1f1f1f;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .comment-input {
+        flex: 1;
+        padding: 10px;
+        color: white;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        margin-right: 10px;
+    }
+
+    .comment-submit {
+        padding: 10px 20px;
+        background-color: #1f1f1f;
+        color: white;
+        border: white;
+        border-width: thin;
+        border-style: solid;
+        border-radius: 10px;
+    }
+
+    .content {
+        padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
+    }
+</style>
+
+@if (_post == null)
+{
+    <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
+                     Type="image,card-avatar">
+    </MSkeletonLoader>
+}
+else
+{
+
+    <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px">
+        <MCardTitle>
+            <span class="text-h6 font-weight-light">@_post.Name</span>
+            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
+            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>VisitOP(_post.UserName)">@_post.UserName</span>
+        </MCardTitle>
+        @if (!string.IsNullOrEmpty(_post.MediaPath))
+        {
+
+            <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
+                <PlaceholderContent>
+
+                    <MProgressCircular Indeterminate Align="@AlignTypes.Center"
+                                       Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
+               
+                </PlaceholderContent>
+        </MImage>
+   
+        }
+
+        <MCardText>
+            <span Class="text-h5 post-content">@_post.Content</span>
+        </MCardText>
+  
+    </MCard>
+
+    <div class="content" @ref="inputElement">
+        @if (Comments == null)
+        {
+
+        }
+        else
+        {
+            if(IsAuth)
+            {
+                <div class="comment-container">
+
+                    <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+                    <button @onclick="()=>SubmitComment()" disabled="@IsBusy" class="comment-submit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" /></svg></button>
+                </div>
+            }
+            <MList ThreeLine style="background-color: #1f1f1f;color: white;">
+                @foreach (var item in Comments)
+                {
+                    <MListItem>
+                        <MListItemContent>
+                            <MListItemTitle>
+                                <span class="text-h6 font-weight-light">@item.Name</span>
+                                <span class="text-h6" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>AppendMention(item)">@@@item.UserName</span>
+                            </MListItemTitle>
+                            <span class="text-h6 font-weight-light">@item.Content</span>
+                        </MListItemContent>
+                    </MListItem>
+
+                }
+            </MList>
+        }
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public Guid PostId { get; set; }
+
+    private bool IsAuth = false;
+
+    private BasePost _post { get; set; }
+
+    private List<Comment> Comments { get; set; } = new List<Comment>();
+    private UserProfile myProfile = new();
+
+    private string CommentContent = string.Empty;
+    private bool IsBusy = false;
+    private ElementReference inputElement;
+    private double initialWindowHeight;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var initData = await telegram.InitializeTelegramWebApp();
+            var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+            if (login.token != "NA")
+                IsAuth = true;
+
+
+            myProfile = await ApiService.UserService.GetMe();
+
+
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            try
+            {
+                PostId = Guid.Parse(query["tgWebAppStartParam"]);
+            }
+            catch
+            {
+
+            }
+
+
+
+            _post = await ApiService.PostService.GetPost(PostId);
+
+            var Commentresult = await ApiService.CommentService.GetPostComments(new GetCommentDto
+                {
+                    Count = 100,
+                    Page = 1,
+                    Id = PostId,
+                    IsReply = false,
+                    Sort = 0,
+                });
+
+            Comments = Commentresult.Data;
+
+            foreach (var comment in Comments)
+            {
+                comment.Content = ConvertUserTags(comment.Content);
+            }
+
+            StateHasChanged();
+        }
+    }
+
+
+    static string ConvertUserTags(string input)
+    {
+        string pattern = @"\[@([^\]]+)\]\(user:[^\)]+\)";
+        // Replace the matched pattern with #username
+        string result = Regex.Replace(input, pattern, "#$1");
+        return result;
+    }
+
+    private void VisitOP(string username)
+    {
+        Navigation.NavigateTo($"/profile/{username}");
+    }
+
+    private void AppendMention(Comment comment)
+    {
+        CommentContent = CommentContent + "#"+comment.UserName+" ";
+    }
+
+    private async Task SubmitComment()
+    {
+        await inputElement.FocusAsync();
+
+        if (IsValid())
+        {
+            IsBusy = true;
+            Comment commentDto = new Comment
+                {
+                    Content = CommentContent,
+                    DateCreated = DateTime.Now,
+                    UserName = myProfile.UserName,
+                    Name = myProfile.Name,
+                    HasReplies = false,
+                    Id = Guid.NewGuid(),
+                    IsReply = false,
+                    PostId = _post.Id.ToString(),
+                   // RepliedTo = Guid.NewGuid(),
+                    ReplyCount = 0,
+                    Support = 0,
+                };
+
+            CommentContent = string.Empty;
+            Comments.Insert(0, commentDto);
+
+            
+            StateHasChanged();
+
+            await ApiService.CommentService.CommentOnPost(commentDto);
+
+        }
+
+        IsBusy = false;
+        await inputElement.FocusAsync();
+
+
+        StateHasChanged();
+    }
+
+    private bool IsValid()
+    {
+        if (string.IsNullOrWhiteSpace(CommentContent))
+            return false;
+
+        if (CommentContent == null)
+            return false;
+
+        if (CommentContent == string.Empty)
+            return false;
+
+        if (CommentContent == "")
+            return false;
+
+        return true;
+    }
+
+
+
+}

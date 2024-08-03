@@ -1,0 +1,221 @@
+﻿@page "/change"
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+@using Toxiq.Mobile.Dto
+@attribute [Authorize]
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JS
+
+<style>
+    .center-items {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* This makes the div take up the full viewport height */
+        border: 1px solid black; /* Just to see the div's boundaries */
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+    }
+
+    .container {
+        padding: 30px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        row-gap: 10px;
+        justify-items: center;
+    }
+
+    .image {
+        margin-bottom: -50px;
+        width: 256px;
+        height: 256px;
+        background-image: url('AppIcon/appicon');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .text-input {
+        grid-row: 1;
+        text-align: center;
+        font-size: 32px;
+        border: none;
+        outline: none;
+        width: 100%;
+        max-width: 400px;
+        padding: 10px;
+        box-sizing: border-box;
+        color: white;
+    }
+
+        .text-input::placeholder {
+            color: gray;
+        }
+
+    .help-text {
+        color: red;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .button-container {
+        grid-row: 2;
+        margin-top: 30px;
+        align-self: end;
+    }
+
+    .button {
+        background-color: white;
+        padding: 10px 20px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .button-label {
+        color: black;
+    }
+</style>
+
+@if (Profile == null)
+{
+    <MProgressCircular Indeterminate Class="center-items"
+                       Size="40"
+                       Color="White"
+                       Width="4">
+    </MProgressCircular>
+}
+else
+{
+    <div class="container">
+        <div class="image"></div>
+        <InputText class="text-input" placeholder="Username" maxlength="15" @bind-Value="Profile.UserName"  />
+        
+        @if(HasError)
+        {
+            <div class="help-text" >@ErrorText</div>
+        }
+        <div class="button-container" @ref="inputElement">
+            <button class="button" @onclick="()=>SubmitUsername()" disabled="@IsLoading">
+                <span class="button-label">Set Username</span>
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    public UserProfile Profile;
+    bool HasError = false;
+    string ErrorText;
+    bool IsLoading = false;
+    private ElementReference inputElement;
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            var initData = await telegram.InitializeTelegramWebApp();
+            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+
+            Profile = await ApiService.UserService.GetMe();
+
+
+            StateHasChanged();
+        }
+    }
+
+
+    async Task SubmitUsername()
+    {
+        await inputElement.FocusAsync();
+        IsLoading = true;
+        if (Validate())
+        {
+
+            var available = await ApiService.UserService.CheckUsername(Profile.UserName);
+            if (!available)
+            {
+                HasError = true;
+                ErrorText = "Username unavailable";
+            }
+            else
+            {
+                var result = await ApiService.UserService.ChangeUsername(Profile.UserName);
+                if (result)
+                {
+                    //await telegram.Close();
+                    Navigation.NavigateTo("/changeColor");
+
+                    //await Shell.Current.GoToAsync($"{nameof(EditProfilePageView)}");
+                }
+
+                HasError = true;
+                ErrorText = "Username unavailable";
+            }
+        }
+        IsLoading = false;
+    }
+
+    bool Validate()
+    {
+
+        if(Profile.UserName.StartsWith("user"))
+        {
+            HasError = true;
+            ErrorText = "Invalid Username";
+
+            return false;
+        }
+
+        if (!ValidateUsernameLength(Profile.UserName))
+        {
+            HasError = true;
+            ErrorText = "Username must be between 4-15 characters";
+
+            return false;
+        }
+        else
+        {
+            // Regular expression to match alphanumeric usernames with _, . between 5 and 9 characters
+            string pattern = @"^[a-zA-Z0-9_.]{4,15}$";
+
+            // Create a Regex object with the specified pattern
+            Regex regex = new Regex(pattern);
+
+            // Check if the username matches the pattern
+            var result = regex.IsMatch(Profile.UserName);
+
+            if (!result)
+            {
+                HasError = true;
+                ErrorText = "Username can only contain alphanumeric characters and _ or .";
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool ValidateUsernameLength(string UserName)
+    {
+        string pattern = @"^.{4,15}$";
+        Regex regex = new Regex(pattern);
+
+        if (!regex.IsMatch(UserName))
+        {
+            return false;
+        }
+
+        return true;
+    }
+}

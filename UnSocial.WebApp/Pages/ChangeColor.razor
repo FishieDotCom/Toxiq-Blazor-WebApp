@@ -1,0 +1,193 @@
+﻿
+@page "/changeColor"
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+@using Toxiq.Mobile.Dto
+@attribute [Authorize]
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JS
+@using Masa.Blazor
+@using Masa.Blazor.Presets
+
+
+<style>
+    .center-items {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* This makes the div take up the full viewport height */
+        border: 1px solid black; /* Just to see the div's boundaries */
+    }
+
+    body {
+
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+    }
+
+    .container {
+        padding: 30px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        row-gap: 10px;
+        justify-items: center;
+    }
+
+    .image {
+        margin-bottom: -50px;
+        width: 256px;
+        height: 256px;
+        background-image: url('AppIcon/appicon');
+        background-size: cover;
+        background-position: center;
+    }
+
+    .text-input {
+        grid-row: 1;
+        text-align: center;
+        font-size: 32px;
+        border: none;
+        outline: none;
+        width: 100%;
+        max-width: 400px;
+        padding: 10px;
+        box-sizing: border-box;
+        color: white;
+    }
+
+        .text-input::placeholder {
+            color: gray;
+        }
+
+    .help-text {
+        color: red;
+        font-size: 14px;
+        text-align: center;
+    }
+
+    .button-container {
+        grid-row: 2;
+        margin-top: 30px;
+        align-self: end;
+    }
+
+    .button {
+        background-color: white;
+        padding: 10px 20px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .button-label {
+        color: black;
+    }
+</style>
+
+@if (Profile == null)
+{
+    <MProgressCircular Indeterminate Class="center-items"
+                       Size="40"
+                       Color="White"
+                       Width="4">
+    </MProgressCircular>
+}
+else
+{
+
+        <MCard Class="mx-auto" Color="@Profile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
+            <MCardTitle>
+                <p class="text-h6 font-weight-light">@Profile.Name</p>
+                <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@Profile.UserName</p>
+               
+            </MCardTitle>
+
+        <MTextField style="padding: 10px;" maxlength="64" @bind-Value="Profile.Bio" Placeholder="Your bio.."> </MTextField>
+        </MCard>
+
+        <MCard Flat Dark>
+
+        <MRadioGroup @bind-Value="Profile.ProfileColor" Row>
+                                <MRadio Label="gray"
+                                        Color="#8a8a8a"
+                                        Value="@("#8a8a8a")">
+                                </MRadio>
+                                <MRadio Label="purple"
+                                        Color="#5a189a"
+                                        Value="@("#5a189a")">
+                                </MRadio>
+                                <MRadio Label="red"
+                                        Color="#800e13"
+                                        Value="@("#800e13")">
+                                </MRadio>
+
+                                <MRadio Label="blue"
+                                        Color="#375191"
+                                        Value="@("#375191")">
+                                </MRadio>
+
+                                <MRadio Label="pink"
+                                        Color="#ff4bb4"
+                                        Value="@("#ff4bb4")">
+                                </MRadio>
+
+                                <MRadio Label="green"
+                    Color="#588157"
+                    Value="@("#588157")">
+                                </MRadio>
+                            </MRadioGroup>
+
+        </MCard>
+
+
+    <button class="button" @onclick="()=>SubmitUsername()" disabled="@IsLoading">
+        <span class="button-label">Save</span>
+    </button>
+
+}
+
+@code {
+    public UserProfile Profile = null;
+    bool HasError = false;
+    string ErrorText;
+    bool IsLoading = false;
+    private ElementReference inputElement;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var initData = await telegram.InitializeTelegramWebApp();
+            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+
+            Profile = await ApiService.UserService.GetMe();
+
+            if(Profile.ProfileColor == null)
+            {
+                Profile.ProfileColor = "#5a189a";
+            }
+
+            StateHasChanged();
+        }
+
+    }
+
+
+
+    async Task SubmitUsername()
+    {
+       // await inputElement.FocusAsync();
+        IsLoading = true;
+  
+            await ApiService.UserService.EditProfile(Profile);
+        Navigation.NavigateTo($"/profile/{Profile.UserName}");
+        
+        IsLoading = false;
+    }
+}
