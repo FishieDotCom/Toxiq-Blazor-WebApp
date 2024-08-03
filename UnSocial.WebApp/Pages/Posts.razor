@@ -67,29 +67,21 @@ else
         </MCardTitle>
         @if (!string.IsNullOrEmpty(_post.MediaPath))
         {
-
             <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
                 <PlaceholderContent>
-
-                    <MProgressCircular Indeterminate Align="@AlignTypes.Center"
-                                       Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-               
+                    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
                 </PlaceholderContent>
-        </MImage>
-   
+            </MImage>
         }
 
         <MCardText>
             <span Class="text-h5 post-content">@_post.Content</span>
         </MCardText>
-  
     </MCard>
 
     <div class="content" @ref="inputElement">
         @if (Comments == null)
-        {
-
-        }
+        {   }
         else
         {
             if(IsAuth)
@@ -112,7 +104,6 @@ else
                             <span class="text-h6 font-weight-light">@item.Content</span>
                         </MListItemContent>
                     </MListItem>
-
                 }
             </MList>
         }
@@ -151,19 +142,18 @@ else
 
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
-
             var query = HttpUtility.ParseQueryString(uri.Query);
 
+            /// Docs
+            /// https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Docs/Posts.md#tg-url
+            /// this code is to handle the edge case to get postid when opening via telegram
+            /// https://docs.telegram-mini-apps.com/platform/start-parameter
             try
             {
                 PostId = Guid.Parse(query["tgWebAppStartParam"]);
             }
             catch
-            {
-
-            }
-
-
+            {}
 
             _post = await ApiService.PostService.GetPost(PostId);
 
@@ -223,7 +213,6 @@ else
                     Id = Guid.NewGuid(),
                     IsReply = false,
                     PostId = _post.Id.ToString(),
-                   // RepliedTo = Guid.NewGuid(),
                     ReplyCount = 0,
                     Support = 0,
                 };
@@ -239,7 +228,7 @@ else
         }
 
         IsBusy = false;
-        await inputElement.FocusAsync();
+        await inputElement.FocusAsync(); //handle ios keyboard bugs
 
 
         StateHasChanged();

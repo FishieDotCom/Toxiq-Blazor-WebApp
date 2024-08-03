@@ -59,17 +59,10 @@ else
         <MCardTitle>
             <p class="text-h6 font-weight-light">@myProfile.Name</p>
             <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@myProfile.UserName</p>
-
             <MListItemTitle>
                 @myProfile.Bio
             </MListItemTitle>
-
-
-
         </MCardTitle>
-
-
-
     </MCard>
 
 
@@ -78,14 +71,12 @@ else
         Achievements
     </MSubheader>
 
-
     <MCard Class="mx-auto"
            Tile>
         <MList Dark>
             @foreach (var item in myProfile.Achievements)
             {
                 <MListItem Dark>
-
                     <MListItemAvatar>
                         <MLabel>@item.Icon</MLabel>
                     </MListItemAvatar>
@@ -95,13 +86,10 @@ else
                         <MListItemSubtitle>@((MarkupString)item.Description)</MListItemSubtitle>
                         <MListItemSubtitle Style="opacity:0.5;">@((MarkupString)item.DateUnlocked.ToString("dd-MM-yyyy"))</MListItemSubtitle>
                     </MListItemContent>
-
-
                 </MListItem>
             }
         </MList>
     </MCard>
-
 }
 
 
@@ -124,6 +112,8 @@ else
     {
         if (firstRender)
         {
+            //Docs
+            //https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/Login.md#login-via-telegram
             var initData = await telegram.InitializeTelegramWebApp();
             var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
             if (login.token != "NA")
@@ -133,13 +123,6 @@ else
 
             StateHasChanged();
         }
-
-    }
-
-
-    protected override async Task OnInitializedAsync()
-    {
-
 
     }
 }

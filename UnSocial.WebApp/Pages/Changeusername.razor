@@ -125,10 +125,8 @@ else
         if(firstRender)
         {
             var initData = await telegram.InitializeTelegramWebApp();
-            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
-
+            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData }); 
             Profile = await ApiService.UserService.GetMe();
-
 
             StateHasChanged();
         }
@@ -155,8 +153,6 @@ else
                 {
                     //await telegram.Close();
                     Navigation.NavigateTo("/changeColor");
-
-                    //await Shell.Current.GoToAsync($"{nameof(EditProfilePageView)}");
                 }
 
                 HasError = true;

@@ -91,11 +91,7 @@
 
 @if (Profile == null)
 {
-    <MProgressCircular Indeterminate Class="center-items"
-                       Size="40"
-                       Color="White"
-                       Width="4">
-    </MProgressCircular>
+    <MProgressCircular Indeterminate Class="center-items" Size="40" Color="White" Width="4"></MProgressCircular>
 }
 else
 {
@@ -103,10 +99,8 @@ else
         <MCard Class="mx-auto" Color="@Profile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
             <MCardTitle>
                 <p class="text-h6 font-weight-light">@Profile.Name</p>
-                <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@Profile.UserName</p>
-               
+                <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@Profile.UserName</p>  
             </MCardTitle>
-
         <MTextField style="padding: 10px;" maxlength="64" @bind-Value="Profile.Bio" Placeholder="Your bio.."> </MTextField>
         </MCard>
 
@@ -182,10 +176,10 @@ else
 
     async Task SubmitUsername()
     {
-       // await inputElement.FocusAsync();
         IsLoading = true;
-  
-            await ApiService.UserService.EditProfile(Profile);
+        /// Docs
+        /// https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/User.md#edit-user-profile
+        await ApiService.UserService.EditProfile(Profile);
         Navigation.NavigateTo($"/profile/{Profile.UserName}");
         
         IsLoading = false;

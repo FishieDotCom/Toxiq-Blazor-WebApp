@@ -23,4 +23,5 @@ myProfile = await ApiService.UserService.GetUser(username);
 [More Details](https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/Login.md#login-via-telegram)
 
 ### Build from source
-the following code cannot be built from source as its only open sourced as an example for how to use Toxiq Api.
+the following code cannot be built from source as its only open sourced as an example for how to use Toxiq Api.  
+this code is a very stripped down version made as a Proof of concept only meant to be used as a placeholder while WebDev team finishes working on [Prod Build](https://github.com/FishieDotCom/toixiq-webapp)

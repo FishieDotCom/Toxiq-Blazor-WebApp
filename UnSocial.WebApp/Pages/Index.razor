@@ -44,25 +44,18 @@
                         </MCardTitle>
                         @if (!string.IsNullOrEmpty(_post.MediaPath))
                         {
-
                             <MImage style="margin-top:15px; padding:5px; margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
                                 <PlaceholderContent>
-
-                                    <MProgressCircular Indeterminate Align="@AlignTypes.Center"
-                                                       Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-
+                                    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
                                 </PlaceholderContent>
                             </MImage>
-
                         }
 
                         <MCardText>
                             <span Class="post-content max-lines" >@_post.Content</span>
                              <br>
                             <p class="text-end" style="margin-bottom:-5px;"> <MIcon Style="opacity:0.8;">mdi-comment-outline</MIcon> <span>@_post.CommentCount</span></p>
-                 
                         </MCardText>
-
                     </MCard>
                 </MListItemContent>
             </MListItem>
@@ -134,13 +127,11 @@
         {
             foreach (var item in result.Data)
             {
-                //item.PostColor = OfflineDB.GetRandomColor();
                 Posts.Add(item);
             }
 
         }
 
-        //OnPropertyChanged(nameof(Posts));
         _CanLoadMore();
         IsLoading = false;
         StateHasChanged();
@@ -152,13 +143,9 @@
     private void _CanLoadMore()
     {
         if (result.TotalPage > SearchQuary.Page && result.TotalCount != 0)
-        {
             CanLoadMore = true;
-        }
         else
-        {
             CanLoadMore = false;
-        }
     }
 
     private async Task OnLoad(InfiniteScrollLoadEventArgs args)
@@ -179,5 +166,4 @@
     {
         Navigation.NavigateTo($"/posts/{id}");
     }
-
 }
