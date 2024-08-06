@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 using Unsocial.WebApp.Services;
-using UnSocial.WebApp.Data;
+using UnSocial.WebApp.Helpers;
 using UnSocial.WebApp.Services;
 
 namespace UnSocial.WebApp
@@ -14,8 +14,7 @@ namespace UnSocial.WebApp
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddSingleton<WeatherForecastService>();
-
+            builder.Services.AddScoped<AppState>();
             builder.Services.AddMasaBlazor(options =>
             {
                 options.ConfigureTheme(theme =>

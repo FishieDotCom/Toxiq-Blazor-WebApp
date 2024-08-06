@@ -1,0 +1,61 @@
+﻿@page "/login"
+
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+
+<div class=" d-flex justify-content-center align-items-center" style="width: 100%; height: 100%;">
+   <h1>test in</h1>
+</div>
+
+
+@code {
+    private bool loading;
+    private string error;
+
+    [CascadingParameter]
+    public MainLayout MainLayout { get; set; }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // redirect to home if already logged in
+            if (ApiService.AuthService.IsAuth != false)
+            {
+                Navigation.NavigateTo("");
+            }
+
+            HandleValidSubmit();
+        }
+
+    }
+
+
+    private async void HandleValidSubmit()
+    {
+        loading = true;
+
+        //var token = await telegram.LoadFromCloud("token");
+
+        var initData = await telegram.InitializeTelegramWebApp();
+
+        try
+        {
+            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+            var user = await ApiService.UserService.GetMe();
+
+
+            var returnUrl = Navigation.QueryString("returnUrl") ?? "/";
+            Navigation.NavigateTo(returnUrl);
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}

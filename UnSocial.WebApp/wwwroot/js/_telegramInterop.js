@@ -37,4 +37,4 @@ window.loadFromCloud = (key) => {
 
 window.showAlert = (msg) => {
     Telegram.WebApp.showAlert(msg);
-}
+};

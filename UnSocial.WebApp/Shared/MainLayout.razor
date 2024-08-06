@@ -1,12 +1,23 @@
-﻿@inherits LayoutComponentBase
+﻿@using Toxiq.Mobile.Dto
+@inherits LayoutComponentBase
+@inject AppState AppState
 @inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
 
 <PageTitle>UnSocial.WebApp</PageTitle>
 
 <div class="page">
     <main>
-        <div class="top-row d-flex justify-content-center align-items-center" style="background-color:#1f1f1f;  text-align:center; border-bottom:none; margin:-20px">
-            <svg viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg" width="128" height="128" style="padding:10px" @onclick="()=>GoHome()">
+
+        <div class="top-row d-flex justify-content-center align-items-center position-relative" style="background-color:#1f1f1f; border-bottom:none; margin:-20px;">
+            <div class="position-absolute" style="right: 35px;">
+                @if (ApiService.AuthService.IsAuth)
+                {
+                    <h2 style="margin: 0;" @onclick="()=>GoProfile()">@myProfile.Name</h2>
+                }
+            </div>
+            <svg viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg" width="128" height="128" style="padding: 10px;" @onclick="()=>GoHome()">
                 <path d="M 176.787 124.415 C 170.454 118.782 160.753 119.349 155.118 125.69 C 149.484 132.03 150.052 141.732 156.392 147.367 C 196.752 183.236 259.249 183.236 299.602 147.367 C 305.942 141.732 306.511 132.03 300.876 125.69 C 295.25 119.349 285.54 118.782 279.207 124.415 C 250.484 149.946 205.518 149.946 176.787 124.415 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
                 <path d="M 177.102 331.305 C 203.891 306.143 252.104 306.143 278.9 331.305 C 285.079 337.107 294.797 336.801 300.6 330.622 C 306.402 324.442 306.096 314.726 299.917 308.921 C 261.306 272.669 194.688 272.669 156.086 308.921 C 149.899 314.726 149.599 324.434 155.402 330.622 C 161.205 336.801 170.915 337.107 177.102 331.305 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
                 <path d="M 330.62 155.403 C 336.799 161.207 337.107 170.916 331.304 177.104 C 306.141 203.892 306.141 252.105 331.304 278.902 C 337.107 285.081 336.799 294.799 330.62 300.601 C 324.434 306.404 314.724 306.097 308.921 299.918 C 272.667 261.308 272.667 194.688 308.921 156.086 C 314.724 149.9 324.434 149.6 330.62 155.403 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
@@ -14,16 +25,71 @@
             </svg>
         </div>
 
+
+
+
         <article class="content px-4">
-            @Body
+                @Body
         </article>
     </main>
 </div>
 
 
 @code{
+    UserProfile myProfile = new();
+    private bool IsAuth = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AppState.OnChange += StateHasChanged;
+
+            int try_counter = 3;
+            while (try_counter != 0)
+            {
+                try
+                {
+                    var initData = await telegram.InitializeTelegramWebApp();
+                    var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
+                    if (login.token != "NA")
+                    {
+                        IsAuth = true;
+                        myProfile = await ApiService.UserService.GetMe();
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+
+                }
+
+                try_counter = try_counter - 1;
+            }       
+            NotifyStateChanged();
+        }
+    }
+
+    public void NotifyStateChanged()
+    {
+        AppState.NotifyStateChanged();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+    private void GoProfile()
+    {
+        Navigation.NavigateTo($"/profile/{myProfile.UserName}");
+    }
+
     private void GoHome()
     {
         Navigation.NavigateTo($"/");
     }
+
+
 }

@@ -1,10 +1,12 @@
 ﻿@page "/profile/{username}"
 @using Toxiq.Mobile.Dto
+@attribute [Authorize]
 @inject NavigationManager Navigation
 @inject Unsocial.WebApp.Services.IApiService ApiService
 @inject ITelegramJsInterop telegram
 @inject IJSRuntime JSRuntime
 @using System.Web;
+@inject AppState AppState
 
 
 <style>
@@ -112,12 +114,7 @@ else
     {
         if (firstRender)
         {
-            //Docs
-            //https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/Login.md#login-via-telegram
-            var initData = await telegram.InitializeTelegramWebApp();
-            var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
-            if (login.token != "NA")
-                IsAuth = true;
+            AppState.OnChange += StateHasChanged;
 
             myProfile = await ApiService.UserService.GetUser(username);
 

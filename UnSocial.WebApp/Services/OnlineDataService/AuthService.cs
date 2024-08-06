@@ -61,6 +61,7 @@ namespace Unsocial.WebApp.Services.OnlineDataService
 
                 HttpHandler.SetToken(result.token);
                 IsAuth = true;
+                // await TelegramJsInterop.SaveLoginToken(result.token);
                 return result;
             }
             catch (Exception ex)

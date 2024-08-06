@@ -7,10 +7,9 @@ namespace Unsocial.WebApp.Services.OnlineDataService
     {
         Task<bool> ChangeUsername(string username);
         Task<bool> CheckUsername(string username);
-        Task<UserProfile> GetMe();
+        Task<UserProfile> GetMe(bool Force = false);
         Task EditProfile(UserProfile profile);
         Task<UserProfile> GetUser(string username);
-
         Task<List<BasePost>> GetUserPosts(string username);
         Task<List<BasePost>> GetUserWallPosts(string username);
     }
@@ -18,6 +17,7 @@ namespace Unsocial.WebApp.Services.OnlineDataService
     public class UserService : IUserService
     {
         private HttpHandler HttpHandler;
+        private UserProfile _profile = null;
 
         public UserService(HttpHandler httpHandler)
         {
@@ -43,9 +43,14 @@ namespace Unsocial.WebApp.Services.OnlineDataService
                 return false;
         }
 
-        public async Task<UserProfile> GetMe()
+        public async Task<UserProfile> GetMe(bool Force = false)
         {
-            return await HttpHandler.GetJsonAsync<UserProfile>("User/GetMe");
+            if (_profile == null || Force)
+            {
+                _profile = await HttpHandler.GetJsonAsync<UserProfile>("User/GetMe");
+            }
+
+            return _profile;
         }
 
         public async Task EditProfile(UserProfile profile)

@@ -11,6 +11,9 @@ namespace UnSocial.WebApp.Services
         Task<string> LoadFromCloud(string key);
         Task Close();
         Task ShowAlert(string key);
+
+        Task<string> GetLoginToken();
+        Task SaveLoginToken(string token);
     }
 
     public class TelegramJsInterop : ITelegramJsInterop
@@ -55,6 +58,17 @@ namespace UnSocial.WebApp.Services
         public async Task ShowAlert(string key)
         {
             await _jsRuntime.InvokeVoidAsync("showAlert", key);
+        }
+
+        public async Task SaveLoginToken(string token)
+        {
+            await _jsRuntime.InvokeVoidAsync("LSset", "token", token);
+        }
+
+        public async Task<string> GetLoginToken()
+        {
+            return await _jsRuntime.InvokeAsync<string>("LSget", "token");
+
         }
     }
 }

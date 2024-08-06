@@ -3,9 +3,11 @@
 @inject Unsocial.WebApp.Services.IApiService ApiService
 @inject ITelegramJsInterop telegram
 @inject IJSRuntime JSRuntime
+@attribute [Authorize]
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.RegularExpressions
 @using Toxiq.Mobile.Dto
+@inject AppState AppState
 
 <PageTitle>Toxiq</PageTitle>
 
@@ -81,7 +83,6 @@
 
     bool IsLoading = true;
     bool CanLoadMore = false;
-    private bool IsAuth = false;
 
     GetPostDto SearchQuary = new GetPostDto
         {
@@ -95,10 +96,7 @@
     {
         if (firstRender)
         {
-            var initData = await telegram.InitializeTelegramWebApp();
-            var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
-            if (login.token != "NA")
-                IsAuth = true;
+            AppState.OnChange += StateHasChanged;
 
             await GetPosts();
         }
@@ -115,7 +113,7 @@
 
     private async Task LoadMore()
     {
-        if (!IsAuth)
+        if (!ApiService.AuthService.IsAuth)
             return;
 
         IsLoading = true;

@@ -3,12 +3,13 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.RegularExpressions
 @using Toxiq.Mobile.Dto
-@attribute [Authorize]
 @inject NavigationManager Navigation
 @inject Unsocial.WebApp.Services.IApiService ApiService
 @inject ITelegramJsInterop telegram
 @inject IJSRuntime JSRuntime
 @using System.Web;
+@inherits ComponentBase
+@inject AppState AppState
 
 
 <style>
@@ -84,7 +85,7 @@ else
         {   }
         else
         {
-            if(IsAuth)
+            if (ApiService.AuthService.IsAuth)
             {
                 <div class="comment-container">
 
@@ -115,11 +116,11 @@ else
     [Parameter]
     public Guid PostId { get; set; }
 
-    private bool IsAuth = false;
 
     private BasePost _post { get; set; }
 
     private List<Comment> Comments { get; set; } = new List<Comment>();
+
     private UserProfile myProfile = new();
 
     private string CommentContent = string.Empty;
@@ -127,19 +128,13 @@ else
     private ElementReference inputElement;
     private double initialWindowHeight;
 
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            var initData = await telegram.InitializeTelegramWebApp();
-            var login = await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
-            if (login.token != "NA")
-                IsAuth = true;
+            AppState.OnChange += StateHasChanged;
 
-
-            myProfile = await ApiService.UserService.GetMe();
-
+            
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var query = HttpUtility.ParseQueryString(uri.Query);
@@ -173,10 +168,17 @@ else
                 comment.Content = ConvertUserTags(comment.Content);
             }
 
+            myProfile = await ApiService.UserService.GetMe();
+
             StateHasChanged();
+
         }
     }
 
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
 
     static string ConvertUserTags(string input)
     {
@@ -199,6 +201,8 @@ else
     private async Task SubmitComment()
     {
         await inputElement.FocusAsync();
+
+        myProfile = await ApiService.UserService.GetMe();
 
         if (IsValid())
         {
