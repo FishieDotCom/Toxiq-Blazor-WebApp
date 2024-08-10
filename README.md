@@ -8,10 +8,10 @@
 ## Bad Code Warning
 this code is not meant to be for prod use. its just a show case of how to interact with the api and a proof of concept for a telegram based webapp for ```Toxiq```
 
-- code for this is incredibly inefficent     
+<del>code for this is incredibly inefficent     
 it auths the user in on every page load and there is 0 state management
 realesticly the code should take advantage of [cloud_storage](https://docs.telegram-mini-apps.com/packages/telegram-apps-sdk/components/cloud-storage) feature which is provided by [telegram-web-app.js](https://telegram.org/js/telegram-web-app.js) but this becomes a mess when a user loads the link outside of telegram  
-so for the time being i decided the best way to make the webapp work would be to do a login on each page load. 
+so for the time being i decided the best way to make the webapp work would be to do a login on each page load. </del>
 
 
 
