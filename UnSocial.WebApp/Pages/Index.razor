@@ -11,6 +11,17 @@
 
 <PageTitle>Toxiq</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="Where Cool Kids Hangout">
+    <meta name="og:description" content="Where Cool Kids Hangout">
+    <meta property="og:site_name" content="Toxiq">
+    
+    <meta name="og:title" content="Toxiq">
+    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-default.jpg">
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+</HeadContent>
+
 <style>
     .post-content {
         font-weight: 500;
@@ -54,7 +65,7 @@
                         }
 
                         <MCardText>
-                            <span Class="post-content max-lines" >@_post.Content</span>
+                            <p Class="post-content max-lines" style=" white-space: pre-wrap;">@_post.Content</p>
                              <br>
                             <p class="text-end" style="margin-bottom:-5px;"> <MIcon Style="opacity:0.8;">mdi-comment-outline</MIcon> <span>@_post.CommentCount</span></p>
                         </MCardText>

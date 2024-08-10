@@ -7,6 +7,7 @@
 @inject Unsocial.WebApp.Services.IApiService ApiService
 @inject ITelegramJsInterop telegram
 @inject IJSRuntime JS
+@inject AppState AppState
 
 <style>
     .center-items {
@@ -85,7 +86,7 @@
     }
 </style>
 
-@if (Profile == null)
+@if (!ApiService.AuthService.IsAuth)
 {
     <MProgressCircular Indeterminate Class="center-items"
                        Size="40"
@@ -124,17 +125,22 @@ else
     {
         if(firstRender)
         {
-            var initData = await telegram.InitializeTelegramWebApp();
-            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData }); 
-            Profile = await ApiService.UserService.GetMe();
+            AppState.OnChange += LoadProfile;
 
-            StateHasChanged();
+       
         }
+    }
+
+    async void LoadProfile()
+    {
+        Profile = await ApiService.UserService.GetMe();
+        StateHasChanged();
     }
 
 
     async Task SubmitUsername()
     {
+        Profile = await ApiService.UserService.GetMe();
         await inputElement.FocusAsync();
         IsLoading = true;
         if (Validate())

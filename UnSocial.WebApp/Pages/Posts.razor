@@ -11,6 +11,18 @@
 @inherits ComponentBase
 @inject AppState AppState
 
+<PageTitle>Toxiq</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Where Cool Kids Hangout">
+    <meta name="og:description" content="Where Cool Kids Hangout">
+    <meta name="og:title" content="Toxiq">
+    <meta property="og:site_name" content="Toxiq">
+    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-post.jpg">
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+</HeadContent>
+
 
 <style>
 
@@ -76,7 +88,7 @@ else
         }
 
         <MCardText>
-            <span Class="text-h5 post-content">@_post.Content</span>
+            <p style=" white-space: pre-wrap;" Class="text-h5 post-content">@_post.Content</p>
         </MCardText>
     </MCard>
 
@@ -132,7 +144,7 @@ else
     {
         if (firstRender)
         {
-            AppState.OnChange += StateHasChanged;
+            AppState.OnChange += LoadProfile;
 
             
 
@@ -168,11 +180,17 @@ else
                 comment.Content = ConvertUserTags(comment.Content);
             }
 
-            myProfile = await ApiService.UserService.GetMe();
+
 
             StateHasChanged();
 
         }
+    }
+
+    async void LoadProfile()
+    {
+        myProfile = await ApiService.UserService.GetMe();
+        StateHasChanged();
     }
 
     public void Dispose()

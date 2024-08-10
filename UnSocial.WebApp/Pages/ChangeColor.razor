@@ -10,7 +10,7 @@
 @inject IJSRuntime JS
 @using Masa.Blazor
 @using Masa.Blazor.Presets
-
+@inject AppState AppState
 
 <style>
     .center-items {
@@ -157,21 +157,20 @@ else
     {
         if (firstRender)
         {
-            var initData = await telegram.InitializeTelegramWebApp();
-            await ApiService.AuthService.Login(new Toxiq.Mobile.Dto.LoginDto { PhoneNumber = "str", OTP = initData });
-
-            Profile = await ApiService.UserService.GetMe();
-
-            if(Profile.ProfileColor == null)
-            {
-                Profile.ProfileColor = "#5a189a";
-            }
-
-            StateHasChanged();
+            AppState.OnChange += LoadProfile;
         }
 
     }
 
+    async void LoadProfile()
+    {
+        Profile = await ApiService.UserService.GetMe();
+        if (Profile.ProfileColor == null)
+        {
+            Profile.ProfileColor = "#5a189a";
+        }
+        StateHasChanged();
+    }
 
 
     async Task SubmitUsername()

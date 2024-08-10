@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Temporary Maintenance</title>
+    <meta name="description" content="Temporary Maintenance">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+</head>
+
+<style>
+    html,
+    div,
+    body {
+        background-color: #1f1f1f !important;
+        color: white;
+    }
+</style>
+
+<body class="py-5" onload="javascript:loadDomain();">
+    <!-- Error Page Content -->
+    <div class="container">
+        <div class="hero text-center my-4">
+            <h1 class="display-5">
+                <svg viewBox="0 0 456 456" xmlns="http://www.w3.org/2000/svg" width="128" height="128">
+                <path d="M 176.787 124.415 C 170.454 118.782 160.753 119.349 155.118 125.69 C 149.484 132.03 150.052 141.732 156.392 147.367 C 196.752 183.236 259.249 183.236 299.602 147.367 C 305.942 141.732 306.511 132.03 300.876 125.69 C 295.25 119.349 285.54 118.782 279.207 124.415 C 250.484 149.946 205.518 149.946 176.787 124.415 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
+                <path d="M 177.102 331.305 C 203.891 306.143 252.104 306.143 278.9 331.305 C 285.079 337.107 294.797 336.801 300.6 330.622 C 306.402 324.442 306.096 314.726 299.917 308.921 C 261.306 272.669 194.688 272.669 156.086 308.921 C 149.899 314.726 149.599 324.434 155.402 330.622 C 161.205 336.801 170.915 337.107 177.102 331.305 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
+                <path d="M 330.62 155.403 C 336.799 161.207 337.107 170.916 331.304 177.104 C 306.141 203.892 306.141 252.105 331.304 278.902 C 337.107 285.081 336.799 294.799 330.62 300.601 C 324.434 306.404 314.724 306.097 308.921 299.918 C 272.667 261.308 272.667 194.688 308.921 156.086 C 314.724 149.9 324.434 149.6 330.62 155.403 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
+                <path d="M 147.081 156.086 C 141.278 149.9 131.56 149.6 125.381 155.403 C 119.195 161.207 118.895 170.916 124.699 177.104 C 149.853 203.892 149.853 252.105 124.699 278.902 C 118.895 285.081 119.195 294.799 125.381 300.601 C 131.56 306.404 141.278 306.097 147.081 299.918 C 183.327 261.308 183.327 194.688 147.081 156.086 Z" style="fill: rgb(227, 227, 227);" transform="matrix(1, 0, 0, 1, 0, 1.4210854715202004e-14)" />
+            </svg>
+            </h1>
+            <h1 class="display-5 fw-bold">Temporary Maintenance</h1>
+            <p class="lead">The web server is currently undergoing some maintenance for <em><span id="display-domain"></span></em>.
+            </p>
+            <p>
+                <btn onclick=javascript:reloadPage(); class="btn btn-outline-light btn-lg">Try This Page Again</a>
+                </btn>
+        </div>
+
+
+    </div>
+    <script type="text/javascript">
+        function loadDomain() {
+            var display = document.getElementById("display-domain");
+            display.innerHTML = document.domain;
+        }
+        // CTA button actions
+        function goToHomePage() {
+            window.location = '/';
+        }
+
+        function reloadPage() {
+            document.location.reload(true);
+        }
+    </script>
+</body>
+
+</html>
