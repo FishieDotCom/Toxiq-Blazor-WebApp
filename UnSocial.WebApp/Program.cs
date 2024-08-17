@@ -1,3 +1,4 @@
+using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Unsocial.WebApp.Services;
 using UnSocial.WebApp.Helpers;
@@ -9,6 +10,7 @@ namespace UnSocial.WebApp
     {
         public static void Main(string[] args)
         {
+            Console.Title = "Toxiq WEB_APP";
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -22,6 +24,10 @@ namespace UnSocial.WebApp
                     theme.Dark = true;
                 });
             });
+
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddFluentUIComponents();
 
 
             builder.Services.AddScoped<ITelegramJsInterop>(sp =>
@@ -69,7 +75,11 @@ namespace UnSocial.WebApp
             app.MapBlazorHub();
             app.MapFallbackToPage("/_Host");
 
+#if DEBUG
+            app.Run("http://10.0.10.3:9454");
+#else
             app.Run();
+#endif
         }
     }
 }
