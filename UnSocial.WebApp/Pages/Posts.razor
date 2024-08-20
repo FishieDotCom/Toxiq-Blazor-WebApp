@@ -157,7 +157,9 @@ else
                 <div class="comment-container">
 
                     <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
-                    <button @onclick="()=>SubmitComment()" disabled="@IsBusy" class="comment-submit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" /></svg></button>
+                    <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
+                                  Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
+                                  OnClick="@(() => SubmitComment())" />
                 </div>
             }
             <MList ThreeLine style="background-color: #1f1f1f;color: white;">
@@ -318,7 +320,7 @@ else
     {
         await inputElement.FocusAsync();
 
-        myProfile = await ApiService.UserService.GetMe();
+        //myProfile = await ApiService.UserService.GetMe();
 
         if (IsValid())
         {
