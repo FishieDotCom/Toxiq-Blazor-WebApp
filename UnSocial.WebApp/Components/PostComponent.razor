@@ -1,7 +1,14 @@
 @using Microsoft.AspNetCore.Components;
 @using Microsoft.FluentUI.AspNetCore.Components;
+@using System.Web
 @using Toxiq.Mobile.Dto
 @inject NavigationManager Navigation
+@inject IToastService ToastService
+@using CurrieTechnologies.Razor.Clipboard
+@inject ClipboardService clipboard
+@inject IJSRuntime JS
+@inject ITelegramJsInterop telegram
+
 @inject Unsocial.WebApp.Services.IApiService ApiService
 
 
@@ -10,7 +17,7 @@
         <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.Name</div>
         <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.UserName</div>
     </div>
-    <div class="Content @(FullPost ? "full-post" : "")" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
+    <div class="Content @(FullPost ? "full-post2" : "")" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
 
     @if (_post.PostMedia.Count != 0)
     {
@@ -48,17 +55,20 @@
                 <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Comment())" />
             </div>
         </div>
-        <div class="EchoIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 3px; padding-left: 3px; padding-right: 2.01px; justify-content: center; align-items: center; display: flex">
+        <div @onclick="ShareClicked" class="EchoIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 3px; padding-left: 3px; padding-right: 2.01px; justify-content: center; align-items: center; display: flex">
             <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Share())" />
 
         </div>
     </div>
 </div>
 
+<BrowserDetect @bind-BrowserInfo="@Info" />
 
 @code {
     [Parameter]
     public BasePost _post { get; set; }
+
+    public BrowserInfo? Info { get; set; }
 
     [Parameter]
     public bool FullPost { get; set; } = true;
@@ -118,6 +128,35 @@
     private void VisitOP(string username)
     {
         if(FullPost)
-        Navigation.NavigateTo($"/profile/{username}");
+            Navigation.NavigateTo($"/profile/{username}");
+    }
+
+    async Task ShareClicked()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+            ToastService.ShowToast(ToastIntent.Info, "Link copied to clipboard",2000);
+        }
+        catch(Exception ex1)
+        {
+            if (Info.IsIPhone == true)
+            {
+                try
+                {
+                    string shareurl = HttpUtility.UrlEncode($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+                    await telegram.ShareToTele(shareurl);
+                }
+                catch
+                {
+                    ToastService.ShowToast(ToastIntent.Error, "this feature is unsupported on your device", 2000);
+                }
+            }
+            else
+            {
+                
+            }
+        }
+ 
     }
 }

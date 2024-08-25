@@ -11,7 +11,7 @@ namespace UnSocial.WebApp.Services
         Task<string> LoadFromCloud(string key);
         Task Close();
         Task ShowAlert(string key);
-
+        Task ShareToTele(string url);
         Task<string> GetLoginToken();
         Task SaveLoginToken(string token);
     }
@@ -54,6 +54,12 @@ namespace UnSocial.WebApp.Services
         {
             return await _jsRuntime.InvokeAsync<string>("loadFromCloud", key);
         }
+
+        public async Task ShareToTele(string url)
+        {
+            await _jsRuntime.InvokeVoidAsync("shareToTele", url);
+        }
+
 
         public async Task ShowAlert(string key)
         {

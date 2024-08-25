@@ -1,3 +1,4 @@
+using CurrieTechnologies.Razor.Clipboard;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Unsocial.WebApp.Services;
@@ -24,7 +25,7 @@ namespace UnSocial.WebApp
                     theme.Dark = true;
                 });
             });
-
+            builder.Services.AddClipboard();
             builder.Services.AddHttpClient();
 
             builder.Services.AddFluentUIComponents();

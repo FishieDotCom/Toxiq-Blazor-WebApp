@@ -65,7 +65,7 @@
         {
             Audience = Audience.All,
             Count = 30,
-            Page = 0,
+            Page = -1,
             Sort = SortType.New,
         };
 
@@ -90,8 +90,8 @@
 
     private async Task LoadMore()
     {
-        if (!ApiService.AuthService.IsAuth)
-            return;
+        // if (!ApiService.AuthService.IsAuth)
+        //     return;
 
         IsLoading = true;
         SearchQuary.Page = SearchQuary.Page + 1;
