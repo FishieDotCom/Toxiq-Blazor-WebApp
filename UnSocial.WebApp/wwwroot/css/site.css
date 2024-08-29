@@ -91,6 +91,15 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.button {
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;

@@ -79,6 +79,7 @@
     .button {
         background-color: white;
         padding: 10px 20px;
+        border-radius: 15px;
         border: none;
         font-weight: bold;
         cursor: pointer;
@@ -91,8 +92,13 @@
 
 @if (Profile == null)
 {
-    <MProgressCircular Indeterminate Class="center-items" Size="40" Color="White" Width="4"></MProgressCircular>
-}
+    <div style="max-width: 500px;margin: 0 auto;">
+    <MProgressCircular Indeterminate Class="center-items"
+                       Size="40"
+                       Color="White"
+                       Width="4">
+    </MProgressCircular>
+    </div>}
 else
 {
 

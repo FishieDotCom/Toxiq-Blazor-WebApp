@@ -29,7 +29,7 @@
 
 <style>
 
-    .post-content{
+    .post-content {
         font-weight: 500;
         color: white;
     }
@@ -68,72 +68,72 @@
 <div style="max-width: 500px;margin: 0 auto;">
     @if (_post == null)
     {
-    <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
-                     Type="image,card-avatar">
-    </MSkeletonLoader>
+        <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
+                         Type="image,card-avatar">
+        </MSkeletonLoader>
     }
-else
-{
+    else
+    {
 
 
 
-    <PostComponent _post="@_post" FullPost="true"  />
-    @* <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px">
-        <MCardTitle>
-            <span class="text-h6 font-weight-light">@_post.Name</span>
-            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
-            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>VisitOP(_post.UserName)">@_post.UserName</span>
-        </MCardTitle>
-        @if (_post.PostMedia.Count != 0)
-        {
-            <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.PostMedia[0].MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
-                <PlaceholderContent>
-                    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-                </PlaceholderContent>
-            </MImage>
-        }
+        <PostComponent _post="@_post" FullPost="true" />
+        @* <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px">
+    <MCardTitle>
+    <span class="text-h6 font-weight-light">@_post.Name</span>
+    <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
+    <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>VisitOP(_post.UserName)">@_post.UserName</span>
+    </MCardTitle>
+    @if (_post.PostMedia.Count != 0)
+    {
+    <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.PostMedia[0].MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
+    <PlaceholderContent>
+    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
+    </PlaceholderContent>
+    </MImage>
+    }
 
-        <MCardText>
-            <p style=" white-space: pre-wrap;" Class="text-h5 post-content">@_post.Content</p>
-        </MCardText>
+    <MCardText>
+    <p style=" white-space: pre-wrap;" Class="text-h5 post-content">@_post.Content</p>
+    </MCardText>
     </MCard> *@
 
-    <div class="content" @ref="inputElement">
-        @if (Comments == null)
-        {   }
-        else
-        {
-            if (ApiService.AuthService.IsAuth)
-            {
-                <div class="comment-container">
-
-                    <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
-                    <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
-                                  Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
-                                  OnClick="@(() => SubmitComment())" />
-                </div>
-            }
+        <div class="content" @ref="inputElement">
+            @if (Comments == null)
+            { }
             else
             {
-                        <FluentButton style="width: 100%;"  @onclick="OpenTele" Appearance="Appearance.Accent" >Login With Telegram to comment</FluentButton>
-            }
-            <MList ThreeLine style="background-color: #1f1f1f;color: white;">
-                @foreach (var item in Comments)
+                if (ApiService.AuthService.IsAuth)
                 {
-                    <MListItem>
-                        <MListItemContent>
-                            <MListItemTitle>
-                                <span class="text-h6 font-weight-light">@item.Name</span>
-                                <span class="text-h6" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>AppendMention(item)">@@@item.UserName</span>
-                            </MListItemTitle>
-                            <span class="text-h6 font-weight-light">@item.Content</span>
-                        </MListItemContent>
-                    </MListItem>
+                    <div class="comment-container">
+
+                        <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+                        <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
+                                      Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
+                                      OnClick="@(() => SubmitComment())" />
+                    </div>
                 }
-            </MList>
-        }
-    </div>
-}
+                else
+                {
+                    <FluentButton style="width: 100%;" @onclick="OpenTele" Appearance="Appearance.Accent">Login With Telegram to comment</FluentButton>
+                }
+                <div style="gap:15px; display:flex;flex-direction:column;margin-top:15px;">
+                    @foreach (var item in Comments)
+                    {
+                        <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex">
+                            <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
+                                <div class="NameSection" @onclick="()=>AppendMention(item)" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                                    <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@item.Name</div>
+                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@@@item.UserName</div>
+                                </div>
+                                <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@item.Content</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
 
 </div>
 
@@ -179,7 +179,7 @@ else
                 PostId = Guid.Parse(query["tgWebAppStartParam"]);
             }
             catch
-            {}
+            { }
 
             _post = await ApiService.PostService.GetPost(PostId);
 
@@ -270,7 +270,7 @@ else
 
     private void AppendMention(Comment comment)
     {
-        CommentContent = CommentContent + "#"+comment.UserName+" ";
+        CommentContent = CommentContent + "#" + comment.UserName + " ";
     }
 
     private async Task SubmitComment()
@@ -296,6 +296,7 @@ else
             CommentContent = string.Empty;
             Comments.Insert(0, commentDto);
 
+            _post.CommentCount = _post.CommentCount + 1;
 
             StateHasChanged();
 

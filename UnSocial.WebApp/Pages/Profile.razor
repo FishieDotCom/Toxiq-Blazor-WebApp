@@ -22,6 +22,10 @@
 
 
 <style>
+    .tab-spacing{
+        margin-left: 10px;
+        margin-right: 10px;
+    }
 
     .post-content {
         font-weight: 500;
@@ -60,7 +64,7 @@
     }
 </style>
 
-@if (myProfile == null)
+@if (UserProfile == null)
 {
     <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
                      Type="card-avatar">
@@ -69,41 +73,69 @@
 else
 {
 
-    <MCard Class="mx-auto" Color="@myProfile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
+    <MCard Class="mx-auto" Color="@UserProfile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
         <MCardTitle>
-            <p class="text-h6 font-weight-light">@myProfile.Name</p>
-            <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@myProfile.UserName</p>
+            <p class="text-h6 font-weight-light">@UserProfile.Name</p>
+            <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@UserProfile.UserName</p>
             <MListItemTitle>
-                @myProfile.Bio
+                @UserProfile.Bio
             </MListItemTitle>
         </MCardTitle>
     </MCard>
 
+    @if (IsMe)
+    {
+        <FluentButton style="width:95%;margin-top:10px;margin:10px;" Appearance="Appearance.Outline">Send Note</FluentButton>
+
+    }
+
+    <FluentTabs ActiveTabId="tab-3">
+        @if (IsMe)
+        {
+            <FluentTab Id="tab-2">
+                <Header>
+                    <span class="tab-spacing">Notes</span>
+                </Header>
+                <Content>
+                    Coming soon
+                </Content>
+            </FluentTab>
+
+        }
+
+        <FluentTab Id="tab-3">
+            <Header>
+                <span class="tab-spacing">About</span>
+            </Header>
+            <Content>
+                <MSubheader Dark>
+                    Achievements
+                </MSubheader>
+
+                <MCard Class="mx-auto" Tile>
+                    <MList Dark>
+                        @foreach (var item in UserProfile.Achievements)
+                        {
+                            <MListItem Dark>
+                                <MListItemAvatar>
+                                    <MLabel>@item.Icon</MLabel>
+                                </MListItemAvatar>
+
+                                <MListItemContent>
+                                    <MListItemTitle>@((MarkupString)item.Name)</MListItemTitle>
+                                    <MListItemSubtitle>@((MarkupString)item.Description)</MListItemSubtitle>
+                                    <MListItemSubtitle Style="opacity:0.5;">@((MarkupString)item.DateUnlocked.ToString("dd-MM-yyyy"))</MListItemSubtitle>
+                                </MListItemContent>
+                            </MListItem>
+                        }
+                    </MList>
+                </MCard>
+            </Content>
+        </FluentTab>
+    </FluentTabs>
 
 
-    <MSubheader Dark>
-        Achievements
-    </MSubheader>
 
-    <MCard Class="mx-auto"
-           Tile>
-        <MList Dark>
-            @foreach (var item in myProfile.Achievements)
-            {
-                <MListItem Dark>
-                    <MListItemAvatar>
-                        <MLabel>@item.Icon</MLabel>
-                    </MListItemAvatar>
-
-                    <MListItemContent>
-                        <MListItemTitle>@((MarkupString)item.Name)</MListItemTitle>
-                        <MListItemSubtitle>@((MarkupString)item.Description)</MListItemSubtitle>
-                        <MListItemSubtitle Style="opacity:0.5;">@((MarkupString)item.DateUnlocked.ToString("dd-MM-yyyy"))</MListItemSubtitle>
-                    </MListItemContent>
-                </MListItem>
-            }
-        </MList>
-    </MCard>
 }
 
 
@@ -113,14 +145,14 @@ else
 
     private bool IsAuth = false;
 
-    private List<Comment> Comments { get; set; } = new List<Comment>();
-    private UserProfile myProfile = null;
+    private UserProfile UserProfile = null;
 
     private string CommentContent = string.Empty;
     private bool IsBusy = false;
     private ElementReference inputElement;
     private double initialWindowHeight;
 
+    bool IsMe = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -128,17 +160,32 @@ else
         {
             AppState.OnChange += LoadProfile;
 
-            myProfile = await ApiService.UserService.GetUser(username);
-
+            UserProfile = await ApiService.UserService.GetUser(username);
             StateHasChanged();
         }
 
     }
 
+
+
     async void LoadProfile()
     {
-        myProfile = await ApiService.UserService.GetMe();
+        var myProfile = await ApiService.UserService.GetMe();
+        try
+        {
+            if (myProfile.UserName == username)
+            {
+                IsMe = true;
+            }
+        }
+        catch
+        {
+
+        }
+
         StateHasChanged();
     }
+
+
 
 }
