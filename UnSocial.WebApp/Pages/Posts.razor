@@ -43,11 +43,12 @@
     }
 
     .comment-input {
+        background: #282828;
         flex: 1;
         padding: 10px;
         color: white;
-        border: 1px solid #ccc;
-        border-radius: 10px;
+        border: 1px solid #282828;
+        border-radius: 15px;
         margin-right: 10px;
     }
 
@@ -74,29 +75,7 @@
     }
     else
     {
-
-
-
         <PostComponent _post="@_post" FullPost="true" />
-        @* <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px">
-    <MCardTitle>
-    <span class="text-h6 font-weight-light">@_post.Name</span>
-    <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
-    <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>VisitOP(_post.UserName)">@_post.UserName</span>
-    </MCardTitle>
-    @if (_post.PostMedia.Count != 0)
-    {
-    <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.PostMedia[0].MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
-    <PlaceholderContent>
-    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-    </PlaceholderContent>
-    </MImage>
-    }
-
-    <MCardText>
-    <p style=" white-space: pre-wrap;" Class="text-h5 post-content">@_post.Content</p>
-    </MCardText>
-    </MCard> *@
 
         <div class="content" @ref="inputElement">
             @if (Comments == null)
@@ -107,7 +86,7 @@
                 {
                     <div class="comment-container">
 
-                        <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+                        <textarea type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
                         <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
                                       Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
                                       OnClick="@(() => SubmitComment())" />
@@ -124,7 +103,7 @@
                             <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
                                 <div class="NameSection" @onclick="()=>AppendMention(item)" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
                                     <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@item.Name</div>
-                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@@@item.UserName</div>
+                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">#@item.UserName</div>
                                 </div>
                                 <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">
                                     <span>@((MarkupString)item.Content)</span>
@@ -147,7 +126,6 @@
 
     private BasePost _post { get; set; }
 
-    private BasePost replypost { get; set; }
 
     private List<Comment> Comments { get; set; } = new List<Comment>();
 
@@ -185,40 +163,19 @@
 
             _post = await ApiService.PostService.GetPost(PostId);
 
-            switch (_post.Type)
+            if(_post == null)
             {
-                case PostType.Burn:
-                    TopColor = "black"; BottomColor = _post.PostColor;
-                    break;
-                case PostType.Wall:
-                    TopColor = _post.PostColor; BottomColor = _post.PostColor;
-                    break;
-                case PostType.Text:
-                    TopColor = "black"; BottomColor = "black";
-                    break;
-            }
+                _post = new BasePost
+                    {
+                        Name = "🥴",
+                        UserName = "@404",
+                        Content = "NOT FOUND",
+                        PostColor = "black",
+                    };
 
-            switch (_post.ReplyType)
-            {
-                case ReplyType.Text:
-                    replypost = await ApiService.PostService.GetPost((Guid)_post.ReplyRefId);
-                    break;
-                case ReplyType.Note:
-                    // var temp = await ApiService.NotesService.GetNote((Guid)ParentPost.ReplyRefId);
-                    // replypost.Content = temp.Content;
-                    // replypost.UserName = "Anon";
-                    // replypost.Name = "";
-                    // _border.BackgroundColor = Color.FromArgb(ParentPost.PostColor);
-                    break;
-                case ReplyType.Comment:
-                // var tempc = await ApiService.CommentService.Getc((Guid)_post.ReplyRefId);
-                // replypost.Content = tempc.Content;
-                // replypost.Name = tempc.Name;
-                // replypost.UserName = tempc.UserName;
-                // TypeIcon.Icon(new MauiIcon() { Icon = FluentIcons.Comment48, IconSize = 18 }.Icon);
-                // break;
-                default:
-                    break;
+                    Comments = null;
+                StateHasChanged();
+                return;
             }
 
             var Commentresult = await ApiService.CommentService.GetPostComments(new GetCommentDto

@@ -83,6 +83,13 @@ else
         </MCardTitle>
     </MCard>
 
+    @if(!IsMe)
+    {
+        <button @onclick="()=>SendNote()" class="button" style="width:100%;margin-top:15px" disabled="@IsBusy">
+            <span style="color:black;">Send Note</span>
+        </button>
+    }
+
     @if (IsMe)
     {
         <FluentButton style="width:95%;margin-top:10px;margin:10px;" Appearance="Appearance.Outline">Send Note</FluentButton>
@@ -187,5 +194,8 @@ else
     }
 
 
-
+    private void SendNote()
+    {
+        Navigation.NavigateTo($"/notes/{UserProfile.UserName}");
+    }
 }

@@ -1,0 +1,203 @@
+﻿@page "/notes/"
+@page "/notes/{username}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+@using System.Text.Json
+@using Toxiq.Mobile.Dto
+@inject IToastService ToastService
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JSRuntime
+@using System.Web;
+@using UnSocial.WebApp.Components
+@inherits ComponentBase
+@inject AppState AppState
+@using Microsoft.FluentUI.AspNetCore.Components;
+
+<PageTitle>Toxiq</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Where Cool Kids Hangout">
+    <meta name="og:description" content="Where Cool Kids Hangout">
+    <meta name="og:title" content="Toxiq">
+    <meta property="og:site_name" content="Toxiq">
+    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-post.jpg">
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+</HeadContent>
+
+
+<style>
+
+    .post-content {
+        font-weight: 500;
+        color: white;
+    }
+
+    .comment-container {
+        width: 100%;
+        background-color: #1f1f1f;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .comment-input {
+        background: transparent;
+        align-self: stretch;
+        height: auto;
+        padding: 10px;
+        color: white;
+        border: 0px solid #282828;
+        border-radius: 15px;
+    }
+
+        .help-text {
+ 
+        font-size: 14px;
+        text-align: left;
+        margin-top:15px;
+    }
+
+    .content {
+        padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
+    }
+</style>
+
+@if (IsMe== false)
+{
+    @if(UserProfile != null)
+    {
+        <div style="max-width: 500px;margin: 0 auto;gap:15px">
+            <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @BottomColor 0%, @TopColor 100%); border-radius: 20px; border: 3px @UserProfile.ProfileColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+                <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                    <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">❓❔</div>
+                    <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">ANON</div>
+                </div>
+                <textarea type="text" maxlength="70" disabled="@IsBusy" placeholder="Write an Anon note..." class="comment-input" autocomplete="off" id="commentInput" @bind="note.Content"/>
+            </div>
+
+            @if (HasError)
+            {
+                <div class="help-text">@ErrorText</div>
+            }
+
+            <button @onclick="()=>SubmitNote()" class="button" style="width:100%;margin-top:15px" disabled="@IsBusy">
+                <span style="color:black;">Send Note to @UserProfile.UserName</span>
+            </button>
+        </div>
+    }
+}
+else{
+    <span >you cant give yourself a note</span>
+
+}
+
+
+@code {
+    [Parameter]
+    public string? username { get; set; }
+
+    private NoteDto _note { get; set; }
+
+
+    bool IsMe = false;
+    private UserProfile UserProfile = null;
+    private NoteDto note = new();
+
+    private bool IsBusy = false;
+
+
+    private string TopColor = "black";
+    private string BottomColor = "black";
+
+    bool HasError = false;
+    string ErrorText;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AppState.OnChange += LoadProfile;
+
+
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            if(username == null)
+            {
+                try
+                {
+                    username = query["tgWebAppStartParam"];
+                }
+                catch { }
+            }
+
+            UserProfile = await ApiService.UserService.GetUser(username);
+            note.Recipient = UserProfile.Id;
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+    async void SubmitNote()
+    {
+        if(string.IsNullOrWhiteSpace( note.Content))
+        {
+            IsBusy = true;
+            HasError = true;
+            ErrorText = "Note is empty!";
+            IsBusy = false;
+            return;
+        }
+        else
+        {
+            IsBusy = true;
+            var result = await ApiService.NotesService.SendNote(note);
+
+            if(!result.IsSuccessStatusCode)
+            {
+                var jsonString = await result.Content.ReadAsStringAsync();
+                JsonDocument jsonDocument = JsonDocument.Parse(jsonString);
+                JsonElement root = jsonDocument.RootElement;
+
+                ErrorText = root.GetProperty("detail").GetString();
+                HasError = true;
+
+            }
+            else
+            {
+              await telegram.Close();
+            }
+            //_ = 
+            IsBusy = false;
+        }
+
+        StateHasChanged();
+
+    }
+
+    async void LoadProfile()
+    {
+        var myProfile = await ApiService.UserService.GetMe();
+        try
+        {
+            if (myProfile.UserName == username)
+            {
+                IsMe = true;
+            }
+        }
+        catch
+        {
+
+        }
+
+        StateHasChanged();
+    }
+
+}

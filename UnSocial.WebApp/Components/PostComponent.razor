@@ -25,7 +25,7 @@
             <img class="Postmedia" style="max-width: 100%; border-radius: 20px" src="@_post.PostMedia[0].MediaPath" />
         </div>
     }
-    @if (replypost != null)
+    @if (replypost.Content != null)
     {
         <div class="ReplyCard" style="border-color: #1f1f1f;border-style: solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
             <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
@@ -76,7 +76,7 @@
     private string TopColor = "black";
     private string BottomColor = "black";
 
-    private BasePost replypost { get; set; }
+    private BasePost replypost = new();
 
 
     protected override void OnInitialized()
@@ -86,6 +86,8 @@
 
     private async Task LoadPost()
     {
+        replypost.Content = null;
+
         switch (_post.Type)
         {
             case PostType.Burn:
@@ -105,11 +107,11 @@
                 replypost = await ApiService.PostService.GetPost((Guid)_post.ReplyRefId);
                 break;
             case ReplyType.Note:
-                // var temp = await ApiService.NotesService.GetNote((Guid)_post.ReplyRefId);
-                // replypost.Content = temp.Content;
-                // replypost.UserName = "Anon";
-                // replypost.Name = "";
-                //_border.BackgroundColor = _post.PostColor;
+                var temp = await ApiService.NotesService.GetNote((Guid)_post.ReplyRefId);
+                replypost.Content = temp.Content;
+                replypost.UserName = "Anon";
+                replypost.Name = "";
+              
                 break;
             case ReplyType.Comment:
             // var tempc = await ApiService.CommentService.Getc((Guid)_post.ReplyRefId);

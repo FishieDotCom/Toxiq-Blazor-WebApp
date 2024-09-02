@@ -7,7 +7,7 @@
 };
 
 window.shareToTele = (url) => {
-    const array = ['https://t.me/share?url=', 'url'];
+    const array = ['https://t.me/share?url=',url];
     Telegram.WebApp.openTelegramLink(array.join(''));
 };
 

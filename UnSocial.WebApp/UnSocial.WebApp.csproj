@@ -32,8 +32,4 @@
     <ProjectReference Include="..\..\Toxiq.Mobile\Toxiq.Mobile.Dto\Toxiq.Mobile.Dto.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\Notes\" />
-  </ItemGroup>
-
 </Project>
