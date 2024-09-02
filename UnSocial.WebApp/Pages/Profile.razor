@@ -22,7 +22,7 @@
 
 
 <style>
-    .tab-spacing{
+    .tab-spacing {
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -72,28 +72,20 @@
 }
 else
 {
+    <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @UserProfile.ProfileColor 0%, @UserProfile.ProfileColor 100%); border-radius: 20px; border: 3px @UserProfile.ProfileColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+        <div style=" color: white; font-size: 25px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@UserProfile.Name</div>
+        <div>
+            <div class="Username" style="color: white; font-size: 20px; font-family: Roboto; font-weight: 900; word-wrap: break-word">@@@UserProfile.UserName</div>
+            <div class="Bio" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto;  word-wrap: break-word;opacity:0.8;">@UserProfile.Bio</div>
+        </div>
+    </div>
 
-    <MCard Class="mx-auto" Color="@UserProfile.ProfileColor" Dark MaxWidth="400" style="border-radius:20px">
-        <MCardTitle>
-            <p class="text-h6 font-weight-light">@UserProfile.Name</p>
-            <p class="text-h6 font-weight-light" style="opacity: 1; font-weight: 500; font-size: x-large;color: white;">@@@UserProfile.UserName</p>
-            <MListItemTitle>
-                @UserProfile.Bio
-            </MListItemTitle>
-        </MCardTitle>
-    </MCard>
 
-    @if(!IsMe)
+    @if (!IsMe)
     {
         <button @onclick="()=>SendNote()" class="button" style="width:100%;margin-top:15px" disabled="@IsBusy">
             <span style="color:black;">Send Note</span>
         </button>
-    }
-
-    @if (IsMe)
-    {
-        <FluentButton style="width:95%;margin-top:10px;margin:10px;" Appearance="Appearance.Outline">Send Note</FluentButton>
-
     }
 
     <FluentTabs ActiveTabId="tab-3">
@@ -107,7 +99,6 @@ else
                     Coming soon
                 </Content>
             </FluentTab>
-
         }
 
         <FluentTab Id="tab-3">

@@ -15,7 +15,7 @@
 <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @BottomColor 0%, @TopColor 100%); border-radius: 20px; border: 3px @_post.PostColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
     <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex" @onclick="()=>VisitOP(_post.UserName)">
         <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.Name</div>
-        <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.UserName</div>
+        <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@@@_post.UserName</div>
     </div>
     <div class="Content @(FullPost ? "" : "full-post2")" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
 
