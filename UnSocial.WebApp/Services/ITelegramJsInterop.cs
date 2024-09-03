@@ -47,7 +47,12 @@ namespace UnSocial.WebApp.Services
 
         public async Task Close()
         {
-            await _jsRuntime.InvokeVoidAsync("close");
+            try { _ = _jsRuntime.InvokeVoidAsync("close"); }
+            catch
+            {
+
+            }
+
 
         }
         public async Task<string> LoadFromCloud(string key)

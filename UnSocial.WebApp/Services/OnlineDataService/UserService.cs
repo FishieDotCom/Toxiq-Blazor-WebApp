@@ -50,6 +50,16 @@ namespace Unsocial.WebApp.Services.OnlineDataService
                 _profile = await HttpHandler.GetJsonAsync<UserProfile>("User/GetMe");
             }
 
+            if (_profile == null)
+            {
+                return new UserProfile
+                {
+                    Name = "",
+                    UserName = "NA",
+                };
+            }
+
+
             return _profile;
         }
 

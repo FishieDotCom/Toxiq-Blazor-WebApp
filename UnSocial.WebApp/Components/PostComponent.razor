@@ -27,7 +27,7 @@
     }
     @if (replypost.Content != null)
     {
-        <div class="ReplyCard" style="border-color: #1f1f1f;border-style: solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
+        <div class="ReplyCard" style="border: 1px #1f1f1f solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
             <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
                 <div class="NameSection" style="width: 270px; height: 17px; justify-content: flex-start; align-items: center; gap: 5px; display: flex">
                     <div class="Username" style="flex: 1 1 0; height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
@@ -39,7 +39,7 @@
             <div class="Test" style="align-self: stretch; height: 16px; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@replypost.Content</div>
         </div>
     }
-    <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex">
+    <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex; width:100%;">
         <div class="LikeButton" style="justify-content: flex-start; align-items: center; gap: 5px; display: flex">
             <div class="UpvoteIcon" style="width: 24px; height: 24px; padding-top: 1px; padding-bottom: 1.82px; padding-left: 3px; padding-right: 3.25px; justify-content: center; align-items: center; display: flex">
                 <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbLike())" />
@@ -51,7 +51,7 @@
         </div>
         <div class="Comments" style="height: 24px; position: relative">
             <div style="left: 29px; top: 3px; position: absolute; color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.CommentCount</div>
-            <div class="CommentIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px; left: 0px; top: 0px; position: absolute; justify-content: center; align-items: center; display: inline-flex">
+            <div class="CommentIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px; left: 0px; top: 0px;  justify-content: center; align-items: center; display: inline-flex">
                 <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Comment())" />
             </div>
         </div>
@@ -111,7 +111,9 @@
                 replypost.Content = temp.Content;
                 replypost.UserName = "Anon";
                 replypost.Name = "";
-              
+                break;
+            case ReplyType.Prompt:
+                replypost = await ApiService.PostService.GetPrompt((Guid)_post.ReplyRefId);
                 break;
             case ReplyType.Comment:
             // var tempc = await ApiService.CommentService.Getc((Guid)_post.ReplyRefId);
@@ -135,30 +137,33 @@
 
     async Task ShareClicked()
     {
-        try
-        {
-            await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
-            ToastService.ShowToast(ToastIntent.Info, "Link copied to clipboard",2000);
-        }
-        catch(Exception ex1)
-        {
-            if (Info.IsIPhone == true)
-            {
-                try
-                {
-                    string shareurl = HttpUtility.UrlEncode($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
-                    await telegram.ShareToTele(shareurl);
-                }
-                catch
-                {
-                    ToastService.ShowToast(ToastIntent.Error, "this feature is unsupported on your device", 2000);
-                }
-            }
-            else
-            {
+
+        Navigation.NavigateTo($"/posts/{_post.Id}/echo?ReplyType=2");
+
+        // try
+        // {
+        //     await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+        //     ToastService.ShowToast(ToastIntent.Info, "Link copied to clipboard",2000);
+        // }
+        // catch(Exception ex1)
+        // {
+        //     if (Info.IsIPhone == true)
+        //     {
+        //         try
+        //         {
+        //             string shareurl = HttpUtility.UrlEncode($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+        //             await telegram.ShareToTele(shareurl);
+        //         }
+        //         catch
+        //         {
+        //             ToastService.ShowToast(ToastIntent.Error, "this feature is unsupported on your device", 2000);
+        //         }
+        //     }
+        //     else
+        //     {
                 
-            }
-        }
+        //     }
+        // }
  
     }
 }

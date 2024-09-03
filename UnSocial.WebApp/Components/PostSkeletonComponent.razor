@@ -1,0 +1,26 @@
+﻿
+<div style="@Style">
+    <FluentCard Shimmer="true" class="card-padding" style=" border-radius: 20px; gap: 10px; border: 3px #414141 solid;">
+        <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+            <FluentSkeleton Shimmer="true" Height="10px;" Width="20px"></FluentSkeleton>
+            <FluentSkeleton Shimmer="true" Height="10px;"></FluentSkeleton>
+        </div>
+        <FluentSkeleton Shimmer="true" Style="margin-top: 10px" Height="10px;" Width="100%"></FluentSkeleton>
+        <FluentSkeleton Shimmer="true" Style="margin-top: 10px" Height="10px;" Width="100%"></FluentSkeleton>
+        <FluentSkeleton Shimmer="true" Style="margin-top: 10px" Height="10px;" Width="50%"></FluentSkeleton>
+
+        <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex;  width:100%;margin-top: 10px">
+            <FluentSkeleton Shimmer="true" Height="20px;" Width="20px" style="justify-content: flex-start; align-items: center;  display: flex"></FluentSkeleton>
+
+            <FluentSkeleton Shimmer="true" Height="20px;" Width="20px" style=" position: relative"></FluentSkeleton>
+
+            <FluentSkeleton Shimmer="true" style=" justify-content: center; align-items: center; display: flex" Height="20px;" Width="20px"></FluentSkeleton>
+
+        </div>
+    </FluentCard>
+</div>
+
+@code {
+    [Parameter]
+    public string Style { get; set; }
+}

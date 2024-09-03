@@ -32,6 +32,19 @@
        Style="margin: 0 auto"
        Id="infinite-scroll-usage">
     <MList Dark >
+
+        @if(Posts.Count ==0)
+        {
+
+      
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+
+      
+        }
+
         @foreach (var _post in Posts)
         {
 

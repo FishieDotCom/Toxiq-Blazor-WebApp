@@ -69,9 +69,7 @@
 <div style="max-width: 500px;margin: 0 auto;">
     @if (_post == null)
     {
-        <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
-                         Type="image,card-avatar">
-        </MSkeletonLoader>
+<PostSkeletonComponent></PostSkeletonComponent>
     }
     else
     {
@@ -106,7 +104,7 @@
                                     <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">#@item.UserName</div>
                                 </div>
                                 <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">
-                                    <span>@((MarkupString)item.Content)</span>
+                                    <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)item.Content)</span>
                                 </div>
                             </div>
                         </div>
@@ -163,7 +161,7 @@
 
             _post = await ApiService.PostService.GetPost(PostId);
 
-            if(_post == null)
+            if (_post == null)
             {
                 _post = new BasePost
                     {
@@ -173,7 +171,7 @@
                         PostColor = "black",
                     };
 
-                    Comments = null;
+                Comments = null;
                 StateHasChanged();
                 return;
             }
