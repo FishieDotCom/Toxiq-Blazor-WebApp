@@ -131,9 +131,9 @@
                                 <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
                                     <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
                                         <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(reply)">@reply.Name</div>
-                                        <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">#@reply.UserName</div>
+                                        <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item, reply.UserName)">#@reply.UserName</div>
                                     </div>
-                                    <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">
+                                    <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item,reply.UserName)">
                                         <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)reply.Content)</span>
                                     </div>
                                 </div>
@@ -301,6 +301,12 @@
         IsReply = true;
 
         await FocusInput();
+    }
+
+    private async void InitReplyWithMention(Comment comment, string mention)
+    {
+        CommentContent = CommentContent + "#" + mention + " ";
+        InitReply(comment);
     }
 
     private async Task FocusInput()
