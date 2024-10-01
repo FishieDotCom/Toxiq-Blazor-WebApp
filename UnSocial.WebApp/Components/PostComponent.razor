@@ -30,7 +30,9 @@
         <div class="ReplyCard" style="border: 1px #1f1f1f solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
             <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
                 <div class="NameSection" style="width: 270px; height: 17px; justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-                    <div class="Username" style="flex: 1 1 0; height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
+                    <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.Name</div>
+
+                    <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
                     <div class="AnonIcon" hidden style="width: 17px; height: 17px; justify-content: center; align-items: center; display: flex">
                         <div class="Vector" style="width: 17px; height: 17px; background: white"></div>
                     </div>
@@ -41,13 +43,13 @@
     }
     <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex; width:100%;">
         <div class="LikeButton" style="justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-            <div class="UpvoteIcon" style="width: 24px; height: 24px; padding-top: 1px; padding-bottom: 1.82px; padding-left: 3px; padding-right: 3.25px; justify-content: center; align-items: center; display: flex">
+            <button class="UpvoteIcon" style="width: 24px; height: 24px; padding: 1px 3.25px 1.82px 3px; justify-content: center; align-items: center; display: flex;  border-radius:10px border: none; cursor: pointer;" @onclick="ToggleLike">
                 <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbLike())" />
-            </div>
+            </button>
             <div style="color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.SupportCount</div>
-            <div class="DownvoteIcon" style="width: 17.75px; height: 21.18px; flex-direction: column; justify-content: center; align-items: center; display: inline-flex">
-                <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbDislike())" />
-            </div>
+            <button class="DownvoteIcon" style="width: 17.75px; height: 21.18px; flex-direction: column; justify-content: center; align-items: center; display: inline-flex; background: none; border: none; cursor: pointer;" @onclick="ToggleDislike">
+                <FluentIcon style="width: 17.75px; height: 21.18px; fill:white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbDislike())" />
+            </button>
         </div>
         <div class="Comments" style="height: 24px; position: relative">
             <div style="left: 29px; top: 3px; position: absolute; color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.CommentCount</div>
@@ -91,7 +93,7 @@
         switch (_post.Type)
         {
             case PostType.Burn:
-                TopColor = "black"; BottomColor = _post.PostColor;
+                TopColor = "black"; BottomColor = "black";
                 break;
             case PostType.Wall:
                 TopColor = _post.PostColor; BottomColor = _post.PostColor;
@@ -127,11 +129,58 @@
         }
     }
 
+    public int InitialLikeCount { get; set; } = 0;
 
+    private int LikeCount { get; set; }
+    private bool IsLiked { get; set; } = false;
+    private bool IsDisliked { get; set; } = false;
+
+    private async Task ToggleLike()
+    {
+        if (_post.SupportStatus == true)
+        {
+            _post.SupportStatus = null;
+            _post.SupportCount--;
+        }
+        else
+        {
+            if (_post.SupportStatus == false)
+            {
+                _post.SupportCount++;
+            }
+            _post.SupportStatus = true;
+            _post.SupportCount++;
+        }
+
+
+        _ = ApiService.PostService.Upvote(_post.Id);
+    }
+
+    private async Task ToggleDislike()
+    {
+        if (_post.SupportStatus == false)
+        {
+            _post.SupportStatus = null;
+            _post.SupportCount++;
+
+        }
+        else
+        {
+            if (_post.SupportStatus == true)
+            {
+                _post.SupportCount--;
+            }
+            _post.SupportStatus = false;
+            _post.SupportCount--;
+        }
+
+
+        _ = ApiService.PostService.Downvote(_post.Id);
+    }
 
     private void VisitOP(string username)
     {
-        if(FullPost)
+        if (FullPost)
             Navigation.NavigateTo($"/profile/{HttpUtility.UrlEncode(username)}");
     }
 
@@ -161,9 +210,9 @@
         //     }
         //     else
         //     {
-                
+
         //     }
         // }
- 
+
     }
 }

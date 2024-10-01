@@ -46,6 +46,7 @@
         background: #282828;
         flex: 1;
         padding: 10px;
+        width: 95%;
         color: white;
         border: 1px solid #282828;
         border-radius: 15px;
@@ -69,7 +70,7 @@
 <div style="max-width: 500px;margin: 0 auto;">
     @if (_post == null)
     {
-<PostSkeletonComponent></PostSkeletonComponent>
+        <PostSkeletonComponent></PostSkeletonComponent>
     }
     else
     {
@@ -83,8 +84,23 @@
                 if (ApiService.AuthService.IsAuth)
                 {
                     <div class="comment-container">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="0">
 
-                        <textarea type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+                            @if (IsReply)
+                            {
+                                <div style="display: flex;justify-content: space-between;margin: 0 10px;width:91%;">
+                                    <p style="margin-bottom:5px; text-align: left;opacity: 0.9;">
+                                        replying to @ReplySource.Name
+                                    </p>
+
+                                    <p style=" text-align: left;" @onclick="()=>CancelReply()">Cancel</p>
+                                </div>
+
+                            }
+
+                            <textarea type="text" @ref="inputElement" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+
+                        </FluentStack>
                         <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
                                       Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
                                       OnClick="@(() => SubmitComment())" />
@@ -98,16 +114,31 @@
                     @foreach (var item in Comments)
                     {
                         <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex">
-                            <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex">
-                                <div class="NameSection" @onclick="()=>AppendMention(item)" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
-                                    <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@item.Name</div>
-                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">#@item.UserName</div>
+                            <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
+                                <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                                    <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(item)">@item.Name</div>
+                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">#@item.UserName</div>
                                 </div>
-                                <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">
+                                <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">
                                     <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)item.Content)</span>
                                 </div>
                             </div>
                         </div>
+
+                        @foreach (var reply in item.Replies)
+                        {
+                            <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex;margin-left: 30px;">
+                                <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
+                                    <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                                        <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(reply)">@reply.Name</div>
+                                        <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">#@reply.UserName</div>
+                                    </div>
+                                    <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">
+                                        <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)reply.Content)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
                     }
                 </div>
             }
@@ -124,6 +155,8 @@
 
     private BasePost _post { get; set; }
 
+    bool IsReply = false;
+    Comment ReplySource;
 
     private List<Comment> Comments { get; set; } = new List<Comment>();
 
@@ -137,13 +170,15 @@
     private string TopColor = "black";
     private string BottomColor = "black";
 
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            await JSRuntime.InvokeVoidAsync("addJavaScriptFunction");
+
             AppState.OnChange += LoadProfile;
-
-
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var query = HttpUtility.ParseQueryString(uri.Query);
@@ -185,8 +220,6 @@
                     Sort = 0,
                 });
 
-
-
             Comments = Commentresult.Data;
 
             foreach (var comment in Comments)
@@ -194,12 +227,29 @@
                 comment.Content = ConvertUserTags(comment.Content);
 
                 comment.Content = TransformText(comment.Content);
+
+                if (comment.ReplyCount != 0)
+                {
+                    var replyReulst = await ApiService.CommentService.GetPostComments(new GetCommentDto
+                        {
+                            Count = 100,
+                            Page = 1,
+                            Id = comment.Id,
+                            IsReply = true,
+                            Sort = 0,
+                        });
+
+                    foreach (var reply in replyReulst.Data)
+                    {
+                        reply.Content = ConvertUserTags(reply.Content);
+                        reply.Content = TransformText(reply.Content);
+
+                        comment.Replies.Add(reply);
+                    }
+                }
             }
 
-
-
             StateHasChanged();
-
         }
     }
 
@@ -241,7 +291,27 @@
 
     private void AppendMention(Comment comment)
     {
+
         CommentContent = CommentContent + "#" + comment.UserName + " ";
+    }
+
+    private async void InitReply(Comment comment)
+    {
+        ReplySource = comment;
+        IsReply = true;
+
+        await FocusInput();
+    }
+
+    private async Task FocusInput()
+    {
+        await JSRuntime.InvokeVoidAsync("focusElement", inputElement);
+    }
+
+    private void CancelReply()
+    {
+        ReplySource = null;
+        IsReply = false;
     }
 
     private async Task SubmitComment()
@@ -264,8 +334,25 @@
                     PostId = _post.Id,
                 };
 
+            if (IsReply)
+            {
+                commentDto.IsReply = true;
+                if (ReplySource.IsReply == true)
+                    commentDto.RepliedTo = ReplySource.RepliedTo;
+                else
+                    commentDto.RepliedTo = ReplySource.Id;
+
+                Comments.Where(x => x.Id == commentDto.RepliedTo).FirstOrDefault().Replies.Add(commentDto);
+            }
+            else
+            {
+                Comments.Insert(0, commentDto);
+            }
+
             CommentContent = string.Empty;
-            Comments.Insert(0, commentDto);
+            IsReply = false;
+
+
 
             _post.CommentCount = _post.CommentCount + 1;
 

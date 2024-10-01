@@ -39,6 +39,13 @@
         <a class="dismiss">🗙</a>
     </div> *@
 
+    <script>
+        window.addJavaScriptFunction = function () {
+            window.focusElement = function (element) {
+                element.focus();
+            }
+        }
+    </script>
 
     <script src="_framework/blazor.server.js"></script>
     <script>

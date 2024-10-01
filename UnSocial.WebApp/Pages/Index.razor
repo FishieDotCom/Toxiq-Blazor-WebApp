@@ -87,7 +87,13 @@
         if (firstRender)
         {
             AppState.OnChange += StateHasChanged;
-
+            SearchQuary = new GetPostDto
+                {
+                    Audience = Audience.All,
+                    Count = 30,
+                    Page = -1,
+                    Sort = SortType.New,
+                };
             await GetPosts();
         }
     }

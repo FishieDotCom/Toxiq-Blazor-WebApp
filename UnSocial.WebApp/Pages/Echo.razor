@@ -179,6 +179,8 @@ else
             try
             {
 
+                 LoadProfile();
+
                 int replytype = int.Parse(query["ReplyType"]);
 
                 if (Enum.IsDefined(typeof(ReplyType), replytype))
