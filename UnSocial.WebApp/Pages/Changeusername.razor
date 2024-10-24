@@ -172,7 +172,7 @@ else
         else
         {
             // Regular expression to match alphanumeric usernames with _, . between 5 and 9 characters
-            string pattern = @"^[a-zA-Z0-9_]{4,15}$";
+            string pattern = @"^[a-zA-Z0-9_ހށނރބޅކއވމފދތލގޏސޑޒޓޔޕޖޗޘޙޚޛޜޝޞޟޠޡޢޣޤޥަާިީުޫެޭޮޯްޱ]{4,15}$";
 
             // Create a Regex object with the specified pattern
             Regex regex = new Regex(pattern);
@@ -183,7 +183,7 @@ else
             if (!result)
             {
                 HasError = true;
-                ErrorText = "Username can only contain alphanumeric characters and _";
+                ErrorText = "Username can only contain alphanumeric characters, Thaana and  _";
 
                 return false;
             }
