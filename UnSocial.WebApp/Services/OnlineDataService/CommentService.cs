@@ -6,7 +6,7 @@ namespace Unsocial.WebApp.Services.OnlineDataService
     public interface ICommentService
     {
         Task<SearchResultDto<Comment>> GetPostComments(GetCommentDto filter);
-        Task CommentOnPost(Comment comment);
+        Task<Comment> CommentOnPost(Comment comment);
 
         Task<SearchResultDto<Comment>> GetCommentReplies(GetCommentDto filter);
         Task ReplyToComment(Comment comment);
@@ -23,9 +23,10 @@ namespace Unsocial.WebApp.Services.OnlineDataService
             this.HttpHandler = httpHandler;
         }
 
-        public async Task CommentOnPost(Comment comment)
+        public async Task<Comment> CommentOnPost(Comment comment)
         {
-            var m = await HttpHandler.PostAsync("Comment/MakeComment", comment);
+            var m = await HttpHandler.PostJsonAsync<Comment>("Comment/MakeComment", comment);
+            return m;
         }
 
         public async Task<SearchResultDto<Comment>> GetCommentReplies(GetCommentDto filter)

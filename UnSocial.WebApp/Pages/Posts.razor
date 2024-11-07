@@ -297,6 +297,9 @@
 
     private async void InitReply(Comment comment)
     {
+         if (comment.Id == Guid.Empty)
+            return;
+
         ReplySource = comment;
         IsReply = true;
 
@@ -305,6 +308,8 @@
 
     private async void InitReplyWithMention(Comment comment, string mention)
     {
+        if (comment.Id == Guid.Empty)
+            return;
         CommentContent = CommentContent + "#" + mention + " ";
         InitReply(comment);
     }
@@ -331,11 +336,12 @@
             IsBusy = true;
             Comment commentDto = new Comment
                 {
+
                     Content = CommentContent,
                     DateCreated = DateTime.Now,
                     UserName = myProfile.UserName,
                     Name = myProfile.Name,
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Empty,
                     IsReply = false,
                     PostId = _post.Id,
                 };
@@ -349,6 +355,7 @@
                     commentDto.RepliedTo = ReplySource.Id;
 
                 Comments.Where(x => x.Id == commentDto.RepliedTo).FirstOrDefault().Replies.Add(commentDto);
+
             }
             else
             {
@@ -364,8 +371,10 @@
 
             StateHasChanged();
 
-            await ApiService.CommentService.CommentOnPost(commentDto);
+            var m = await ApiService.CommentService.CommentOnPost(commentDto);
 
+            if (IsReply == false)
+                Comments[0].Id = m.Id;
         }
 
         IsBusy = false;
