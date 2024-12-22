@@ -57,6 +57,29 @@ namespace UnSocial.WebApp
 
             var app = builder.Build();
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Value?.Equals("/.well-known/apple-app-site-association", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    var filePath = Path.Combine(app.Environment.WebRootPath, ".well-known", "apple-app-site-association");
+
+                    if (File.Exists(filePath))
+                    {
+                        context.Response.ContentType = "application/json";
+                        await context.Response.SendFileAsync(filePath);
+                        return;
+                    }
+                    else
+                    {
+                        // If the file is missing, return a 404
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        return;
+                    }
+                }
+                await next();
+            });
+
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {

@@ -96,7 +96,7 @@ else
                     <span class="tab-spacing">Notes</span>
                 </Header>
                 <Content>
-                    Coming soon
+                    Coming soon  
                 </Content>
             </FluentTab>
         }
@@ -144,7 +144,7 @@ else
     private bool IsAuth = false;
 
     private UserProfile UserProfile = null;
-
+    private UserProfile myProfile = new();
     private string CommentContent = string.Empty;
     private bool IsBusy = false;
     private ElementReference inputElement;
@@ -156,22 +156,22 @@ else
     {
         if (firstRender)
         {
+
             AppState.OnChange += LoadProfile;
-
-            UserProfile = await ApiService.UserService.GetUser(username);
-            StateHasChanged();
+            //await  LoadProfile();
+            //StateHasChanged();
         }
-
     }
 
 
 
     async void LoadProfile()
     {
-        var myProfile = await ApiService.UserService.GetMe();
+        myProfile = await ApiService.UserService.GetMe();
+        UserProfile = await ApiService.UserService.GetUser(username);
         try
         {
-            if (myProfile.UserName == username)
+            if (UserProfile.UserName == myProfile.UserName)
             {
                 IsMe = true;
             }
