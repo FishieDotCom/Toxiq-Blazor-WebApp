@@ -1,6 +1,7 @@
 ﻿//using Toxiq.Mobile.Service.OfflineDataService;
 using Unsocial.WebApp.Services.OnlineDataService;
 using UnSocial.WebApp.Services;
+using UnSocial.WebApp.Services.OnlineDataService;
 
 namespace Unsocial.WebApp.Services
 {
@@ -11,6 +12,7 @@ namespace Unsocial.WebApp.Services
         IPostService PostService { get; set; }
         IUserService UserService { get; set; }
         ICommentService CommentService { get; set; }
+        INotesService NotesService { get; set; }
     }
 
     public class ApiService : IApiService
@@ -28,8 +30,10 @@ namespace Unsocial.WebApp.Services
             PostService = new PostService(handler);
             ColorService = new ColorService(handler);
             AuthService = new AuthService(TelegramJsInterop, handler);
+            NotesService = new NotesService(handler);
         }
 
+        public INotesService NotesService { get; set; }
         public IAuthService AuthService { get; set; }
         public IColorService ColorService { get; set; }
         public IPostService PostService { get; set; }
