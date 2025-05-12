@@ -25,6 +25,7 @@ namespace UnSocial.WebApp
                     theme.Dark = true;
                 });
             });
+            builder.Services.AddFluentUIComponents();
             builder.Services.AddClipboard();
             builder.Services.AddHttpClient();
 

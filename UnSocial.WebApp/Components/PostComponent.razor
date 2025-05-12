@@ -43,7 +43,7 @@
     }
     <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex; width:100%;">
         <div class="LikeButton" style="justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-            <button class="UpvoteIcon" style="width: 24px; height: 24px; padding: 1px 3.25px 1.82px 3px; justify-content: center; align-items: center; display: flex;  border-radius:10px border: none; cursor: pointer;" @onclick="ToggleLike">               
+            <button class="UpvoteIcon" style="width: 24px; height: 24px; padding: 1px 3.25px 1.82px 3px; justify-content: center; align-items: center; display: flex;  border-radius:10px border: none; cursor: pointer;" @onclick="ToggleLike" @onclick:stopPropagation>               
                 <div>
                     @if(_post.SupportStatus == true)
                     {
@@ -90,6 +90,9 @@
 
     [Parameter]
     public bool FullPost { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnSupportClick { get; set; }
 
     private string TopColor = "black";
     private string BottomColor = "black";
@@ -202,33 +205,6 @@
 
     async Task ShareClicked()
     {
-
         Navigation.NavigateTo($"/posts/{_post.Id}/echo?ReplyType=2");
-
-        // try
-        // {
-        //     await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
-        //     ToastService.ShowToast(ToastIntent.Info, "Link copied to clipboard",2000);
-        // }
-        // catch(Exception ex1)
-        // {
-        //     if (Info.IsIPhone == true)
-        //     {
-        //         try
-        //         {
-        //             string shareurl = HttpUtility.UrlEncode($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
-        //             await telegram.ShareToTele(shareurl);
-        //         }
-        //         catch
-        //         {
-        //             ToastService.ShowToast(ToastIntent.Error, "this feature is unsupported on your device", 2000);
-        //         }
-        //     }
-        //     else
-        //     {
-
-        //     }
-        // }
-
     }
 }
