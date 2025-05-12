@@ -100,7 +100,8 @@ namespace UnSocial.WebApp
             app.MapFallbackToPage("/_Host");
 
 #if DEBUG
-            app.Run("http://10.0.10.3:9454");
+            //   app.Run("http://10.0.10.3:9454");
+            app.Run();
 #else
             app.Run();
 #endif
