@@ -18,13 +18,13 @@
         border: 1px solid black; /* Just to see the div's boundaries */
     }
 
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
+    .button {
+        background-color: white;
+        padding: 10px 20px;
+        border-radius: 15px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
     }
 
     .container {
@@ -33,15 +33,6 @@
         grid-template-rows: auto 1fr auto;
         row-gap: 10px;
         justify-items: center;
-    }
-
-    .image {
-        margin-bottom: -50px;
-        width: 256px;
-        height: 256px;
-        background-image: url('AppIcon/appicon');
-        background-size: cover;
-        background-position: center;
     }
 
     .text-input {
@@ -73,14 +64,6 @@
         align-self: end;
     }
 
-    .button {
-        background-color: white;
-        padding: 10px 20px;
-        border: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
     .button-label {
         color: black;
     }
@@ -88,16 +71,17 @@
 
 @if (!ApiService.AuthService.IsAuth)
 {
+    <div style="max-width: 500px;margin: 0 auto;">
     <MProgressCircular Indeterminate Class="center-items"
                        Size="40"
                        Color="White"
                        Width="4">
     </MProgressCircular>
+    </div>
 }
 else
 {
     <div class="container">
-        <div class="image"></div>
         <InputText class="text-input" placeholder="Username" maxlength="15" @bind-Value="Profile.UserName"  />
         
         @if(HasError)
@@ -125,9 +109,7 @@ else
     {
         if(firstRender)
         {
-            AppState.OnChange += LoadProfile;
-
-       
+            AppState.OnChange += LoadProfile;       
         }
     }
 
@@ -157,8 +139,9 @@ else
                 var result = await ApiService.UserService.ChangeUsername(Profile.UserName);
                 if (result)
                 {
-                    //await telegram.Close();
-                    Navigation.NavigateTo("/changeColor");
+                    await telegram.Close();
+                    //Navigation.NavigateTo("/changeColor");
+                    //return;
                 }
 
                 HasError = true;
@@ -189,7 +172,7 @@ else
         else
         {
             // Regular expression to match alphanumeric usernames with _, . between 5 and 9 characters
-            string pattern = @"^[a-zA-Z0-9_.]{4,15}$";
+            string pattern = @"^[a-zA-Z0-9_ހށނރބޅކއވމފދތލގޏސޑޒޓޔޕޖޗޘޙޚޛޜޝޞޟޠޡޢޣޤޥަާިީުޫެޭޮޯްޱ]{4,15}$";
 
             // Create a Regex object with the specified pattern
             Regex regex = new Regex(pattern);
@@ -200,7 +183,7 @@ else
             if (!result)
             {
                 HasError = true;
-                ErrorText = "Username can only contain alphanumeric characters and _ or .";
+                ErrorText = "Username can only contain alphanumeric characters, Thaana and  _";
 
                 return false;
             }

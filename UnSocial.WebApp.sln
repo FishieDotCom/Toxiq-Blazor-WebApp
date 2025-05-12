@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnSocial.WebApp", "UnSocial.WebApp\UnSocial.WebApp.csproj", "{FEFFAABE-A8E8-469C-8C5E-7752885B0165}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxiq.Mobile.Dto", "..\Toxiq.Mobile\Toxiq.Mobile.Dto\Toxiq.Mobile.Dto.csproj", "{B7F15166-ACD9-46A0-A991-4D63C78C3874}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Toxiq.Mobile.Dto", "..\Toxiq.Mobile\Toxiq.Mobile.Dto\Toxiq.Mobile.Dto.csproj", "{EF60A4DD-75D4-4A69-88F3-431766D9E0AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{FEFFAABE-A8E8-469C-8C5E-7752885B0165}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEFFAABE-A8E8-469C-8C5E-7752885B0165}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEFFAABE-A8E8-469C-8C5E-7752885B0165}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B7F15166-ACD9-46A0-A991-4D63C78C3874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B7F15166-ACD9-46A0-A991-4D63C78C3874}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B7F15166-ACD9-46A0-A991-4D63C78C3874}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B7F15166-ACD9-46A0-A991-4D63C78C3874}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF60A4DD-75D4-4A69-88F3-431766D9E0AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF60A4DD-75D4-4A69-88F3-431766D9E0AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF60A4DD-75D4-4A69-88F3-431766D9E0AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF60A4DD-75D4-4A69-88F3-431766D9E0AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

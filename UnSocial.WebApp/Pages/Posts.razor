@@ -3,11 +3,13 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.RegularExpressions
 @using Toxiq.Mobile.Dto
+@inject IToastService ToastService
 @inject NavigationManager Navigation
 @inject Unsocial.WebApp.Services.IApiService ApiService
 @inject ITelegramJsInterop telegram
 @inject IJSRuntime JSRuntime
 @using System.Web;
+@using UnSocial.WebApp.Components
 @inherits ComponentBase
 @inject AppState AppState
 @using Microsoft.FluentUI.AspNetCore.Components;
@@ -27,156 +29,137 @@
 
 <style>
 
-    .post-content{
-        font-weight: 500;
-        color: white;
+    .post-content {
+    font-weight: 500;
+    color: white;
     }
 
     .comment-container {
-        width: 100%;
-        background-color: #1f1f1f;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
+    width: 100%;
+    background-color: #1f1f1f;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
     }
 
     .comment-input {
-        flex: 1;
-        padding: 10px;
-        color: white;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        margin-right: 10px;
+    background: #282828;
+    flex: 1;
+    padding: 10px;
+    width: 95%;
+    color: white;
+    border: 1px solid #282828;
+    border-radius: 15px;
+    margin-right: 10px;
     }
 
     .comment-submit {
-        padding: 10px 20px;
-        background-color: #1f1f1f;
-        color: white;
-        border: white;
-        border-width: thin;
-        border-style: solid;
-        border-radius: 10px;
+    padding: 10px 20px;
+    background-color: #1f1f1f;
+    color: white;
+    border: white;
+    border-width: thin;
+    border-style: solid;
+    border-radius: 10px;
     }
 
     .content {
-        padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
+    padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
     }
 </style>
+<div style="max-width: 500px;margin: 0 auto;">
+    @if (_post == null)
+    {
+        <PostSkeletonComponent></PostSkeletonComponent>
+    }
+    else
+    {
+        <PostComponent _post="@_post" FullPost="true" />
 
-@if (_post == null)
-{
-    <MSkeletonLoader MaxWidth="400" Class="mx-auto" Dark
-                     Type="image,card-avatar">
-    </MSkeletonLoader>
-}
-else
-{
-
-
-
-    <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @BottomColor 0%, @TopColor 100%); border-radius: 20px; border: 3px @_post.PostColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
-        <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex" @onclick="()=>VisitOP(_post.UserName)">
-                    <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.Name</div>
-                    <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.UserName</div>
-                </div>
-        <div class="Content" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
-
-        @if (_post.PostMedia.Count != 0)
-        {
-            <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
-                <img class="Postmedia" style="max-width: 100%; border-radius: 20px" src="@_post.PostMedia[0].MediaPath" />
-                </div>
-        }
-        @if(_post.ReplyRefId != null)
-        {
-            <div class="ReplyCard" style="border-color: #1f1f1f;border-style: solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
-                <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
-                    <div class="NameSection" style="width: 270px; height: 17px; justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-                        <div class="Username" style="flex: 1 1 0; height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
-                        <div class="AnonIcon" hidden style="width: 17px; height: 17px; justify-content: center; align-items: center; display: flex">
-                            <div class="Vector" style="width: 17px; height: 17px; background: white"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="Test" style="align-self: stretch; height: 16px; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@replypost.Content</div>
-            </div>
-        }
-        <div class="PostInteraction"  style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex">
-                    <div class="LikeButton" style="justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-                        <div class="UpvoteIcon" style="width: 24px; height: 24px; padding-top: 1px; padding-bottom: 1.82px; padding-left: 3px; padding-right: 3.25px; justify-content: center; align-items: center; display: flex">
-                    <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbLike())" />
-                </div>
-                        <div style="color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.SupportCount</div>
-                        <div class="DownvoteIcon" style="width: 17.75px; height: 21.18px; flex-direction: column; justify-content: center; align-items: center; display: inline-flex">
-                            <FluentIcon  style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbDislike())"/>
-                        </div>
-                    </div>
-                    <div class="Comments" style="height: 24px; position: relative">
-                <div style="left: 29px; top: 3px; position: absolute; color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.CommentCount</div>
-                        <div class="CommentIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px; left: 0px; top: 0px; position: absolute; justify-content: center; align-items: center; display: inline-flex">
-                    <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Comment())" />
-                </div>
-                    </div>
-                    <div class="EchoIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 3px; padding-left: 3px; padding-right: 2.01px; justify-content: center; align-items: center; display: flex">
-                <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Share())" />
-
-                    </div>
-                </div>
-            </div>
-    
-
-
-    @* <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px">
-        <MCardTitle>
-            <span class="text-h6 font-weight-light">@_post.Name</span>
-            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
-            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>VisitOP(_post.UserName)">@_post.UserName</span>
-        </MCardTitle>
-        @if (_post.PostMedia.Count != 0)
-        {
-            <MImage style="margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.PostMedia[0].MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
-                <PlaceholderContent>
-                    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-                </PlaceholderContent>
-            </MImage>
-        }
-
-        <MCardText>
-            <p style=" white-space: pre-wrap;" Class="text-h5 post-content">@_post.Content</p>
-        </MCardText>
-    </MCard> *@
-
-    <div class="content" @ref="inputElement">
-        @if (Comments == null)
-        {   }
-        else
-        {
-            if (ApiService.AuthService.IsAuth)
+        <div class="content" @ref="inputElement">
+            @if (Comments == null)
+            { }
+            else
             {
-                <div class="comment-container">
+                if (ApiService.AuthService.IsAuth)
+                {
+                    <div class="comment-container">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="0">
 
-                    <input type="text" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
-                    <button @onclick="()=>SubmitComment()" disabled="@IsBusy" class="comment-submit"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed"><path d="M120-160v-640l760 320-760 320Zm80-120 474-200-474-200v140l240 60-240 60v140Zm0 0v-400 400Z" /></svg></button>
+                            @if (IsReply)
+                            {
+                                <div style="display: flex;justify-content: space-between;margin: 0 10px;width:91%;">
+                                    <p style="margin-bottom:5px; text-align: left;opacity: 0.9;">
+                                        replying to @ReplySource.Name
+                                    </p>
+
+                                    <p style=" text-align: left;" @onclick="()=>CancelReply()">Cancel</p>
+                                </div>
+
+                            }
+
+                            <textarea type="text" @ref="inputElement" disabled="@IsBusy" @onsubmit="()=>SubmitComment()" placeholder="Write a comment..." class="comment-input" autocomplete="off" id="commentInput" @bind="CommentContent" />
+
+                        </FluentStack>
+                        <FluentButton IconEnd="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size16.Send())" style="height: 45px;"
+                        Title="Globe" disabled="@IsBusy" Appearance="Appearance.Outline" Color="Color.Error"
+                        OnClick="@(() => SubmitComment())" />
+                    </div>
+                }
+                else
+                {
+                    <FluentButton style="width: 100%;" @onclick="OpenTele" Appearance="Appearance.Accent">Login With Telegram to comment</FluentButton>
+                }
+                <div style="gap:15px; display:flex;flex-direction:column;margin-top:15px;">
+                    @foreach (var item in Comments)
+                    {
+                        <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex">
+                            <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
+                                <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                                    <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(item)">@item.Name</div>
+                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">#@item.UserName</div>
+                                </div>
+                                <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">
+                                    <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)item.Content)</span>
+                                </div>
+
+                                @if (item.PostMedia !=null)
+                                {
+                                    <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
+                                        <img class="Postmedia" style="max-width: 100%; max-height:100px; border-radius: 20px" src="@item.PostMedia.MediaPath" />
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        @foreach (var reply in item.Replies)
+                        {
+                            <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex;margin-left: 30px;">
+                                <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
+                                    <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                                        <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(reply)">@reply.Name</div>
+                                        <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item, reply.UserName)">#@reply.UserName</div>
+                                    </div>
+                                    <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item,reply.UserName)">
+                                        <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)reply.Content)</span>
+                                    </div>
+
+                                    @if (reply.PostMedia != null)
+                                    {
+                                        <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
+                                            <img class="Postmedia" style="max-width: 100%; max-height:100px; border-radius: 20px" src="@reply.PostMedia.MediaPath" />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
                 </div>
             }
-            <MList ThreeLine style="background-color: #1f1f1f;color: white;">
-                @foreach (var item in Comments)
-                {
-                    <MListItem>
-                        <MListItemContent>
-                            <MListItemTitle>
-                                <span class="text-h6 font-weight-light">@item.Name</span>
-                                <span class="text-h6" style="opacity: 0.7; font-weight: 300; font-size: smaller;" @onclick="()=>AppendMention(item)">@@@item.UserName</span>
-                            </MListItemTitle>
-                            <span class="text-h6 font-weight-light">@item.Content</span>
-                        </MListItemContent>
-                    </MListItem>
-                }
-            </MList>
-        }
-    </div>
-}
+        </div>
+    }
+
+</div>
 
 
 @code {
@@ -186,7 +169,8 @@ else
 
     private BasePost _post { get; set; }
 
-    private BasePost replypost { get; set; }
+    bool IsReply = false;
+    Comment ReplySource;
 
     private List<Comment> Comments { get; set; } = new List<Comment>();
 
@@ -200,13 +184,15 @@ else
     private string TopColor = "black";
     private string BottomColor = "black";
 
+
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            AppState.OnChange += LoadProfile;
+            await JSRuntime.InvokeVoidAsync("addJavaScriptFunction");
 
-            
+            AppState.OnChange += LoadProfile;
 
             var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
             var query = HttpUtility.ParseQueryString(uri.Query);
@@ -220,44 +206,23 @@ else
                 PostId = Guid.Parse(query["tgWebAppStartParam"]);
             }
             catch
-            {}
+            { }
 
             _post = await ApiService.PostService.GetPost(PostId);
 
-            switch (_post.Type)
+            if (_post == null)
             {
-                case PostType.Burn:
-                    TopColor = "black"; BottomColor = _post.PostColor;
-                    break;
-                case PostType.Wall:
-                    TopColor = _post.PostColor; BottomColor = _post.PostColor;
-                    break;
-                case PostType.Text:
-                    TopColor = "black"; BottomColor = "black";
-                    break;
-            }
+                _post = new BasePost
+                    {
+                        Name = "🥴",
+                        UserName = "@404",
+                        Content = "NOT FOUND",
+                        PostColor = "black",
+                    };
 
-            switch (_post.ReplyType)
-            {
-                case ReplyType.Text:
-                    replypost = await ApiService.PostService.GetPost((Guid)_post.ReplyRefId);
-                    break;
-                case ReplyType.Note:
-                    // var temp = await ApiService.NotesService.GetNote((Guid)ParentPost.ReplyRefId);
-                    // replypost.Content = temp.Content;
-                    // replypost.UserName = "Anon";
-                    // replypost.Name = "";
-                    // _border.BackgroundColor = Color.FromArgb(ParentPost.PostColor);
-                    break;
-                case ReplyType.Comment:
-                    // var tempc = await ApiService.CommentService.Getc((Guid)_post.ReplyRefId);
-                    // replypost.Content = tempc.Content;
-                    // replypost.Name = tempc.Name;
-                    // replypost.UserName = tempc.UserName;
-                    // TypeIcon.Icon(new MauiIcon() { Icon = FluentIcons.Comment48, IconSize = 18 }.Icon);
-                    // break;
-                default:
-                    break;
+                Comments = null;
+                StateHasChanged();
+                return;
             }
 
             var Commentresult = await ApiService.CommentService.GetPostComments(new GetCommentDto
@@ -269,19 +234,36 @@ else
                     Sort = 0,
                 });
 
-
-
             Comments = Commentresult.Data;
 
             foreach (var comment in Comments)
             {
                 comment.Content = ConvertUserTags(comment.Content);
+
+                comment.Content = TransformText(comment.Content);
+
+                if (comment.ReplyCount != 0)
+                {
+                    var replyReulst = await ApiService.CommentService.GetPostComments(new GetCommentDto
+                        {
+                            Count = 100,
+                            Page = 1,
+                            Id = comment.Id,
+                            IsReply = true,
+                            Sort = 0,
+                        });
+
+                    foreach (var reply in replyReulst.Data)
+                    {
+                        reply.Content = ConvertUserTags(reply.Content);
+                        reply.Content = TransformText(reply.Content);
+
+                        comment.Replies.Add(reply);
+                    }
+                }
             }
 
-
-
             StateHasChanged();
-
         }
     }
 
@@ -298,10 +280,24 @@ else
 
     static string ConvertUserTags(string input)
     {
+        if (input == null)
+            return "";
         string pattern = @"\[@([^\]]+)\]\(user:[^\)]+\)";
         // Replace the matched pattern with #username
         string result = Regex.Replace(input, pattern, "#$1");
         return result;
+    }
+
+    private string TransformText(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return input;
+
+        // Regex to find hashtags
+        var regex = new System.Text.RegularExpressions.Regex(@"#(\w+)");
+        var transformedText = regex.Replace(input, m => $"<a href=\"profile/{m.Groups[1].Value}\" style=\"font-weight: 700; color:dodgerblue;text-decoration: none;\">{m.Value}</a>");
+
+        return transformedText;
     }
 
     private void VisitOP(string username)
@@ -311,37 +307,90 @@ else
 
     private void AppendMention(Comment comment)
     {
-        CommentContent = CommentContent + "#"+comment.UserName+" ";
+
+        CommentContent = CommentContent + "#" + comment.UserName + " ";
+    }
+
+    private async void InitReply(Comment comment)
+    {
+         if (comment.Id == Guid.Empty)
+            return;
+
+        ReplySource = comment;
+        IsReply = true;
+
+        await FocusInput();
+    }
+
+    private async void InitReplyWithMention(Comment comment, string mention)
+    {
+        if (comment.Id == Guid.Empty)
+            return;
+        CommentContent = CommentContent + "#" + mention + " ";
+        InitReply(comment);
+    }
+
+    private async Task FocusInput()
+    {
+        await JSRuntime.InvokeVoidAsync("focusElement", inputElement);
+    }
+
+    private void CancelReply()
+    {
+        ReplySource = null;
+        IsReply = false;
     }
 
     private async Task SubmitComment()
     {
         await inputElement.FocusAsync();
 
-        myProfile = await ApiService.UserService.GetMe();
+        //myProfile = await ApiService.UserService.GetMe();
 
         if (IsValid())
         {
             IsBusy = true;
             Comment commentDto = new Comment
                 {
+
                     Content = CommentContent,
                     DateCreated = DateTime.Now,
                     UserName = myProfile.UserName,
                     Name = myProfile.Name,
-                    Id = Guid.NewGuid(),
+                    Id = Guid.Empty,
                     IsReply = false,
                     PostId = _post.Id,
                 };
 
-            CommentContent = string.Empty;
-            Comments.Insert(0, commentDto);
+            if (IsReply)
+            {
+                commentDto.IsReply = true;
+                if (ReplySource.IsReply == true)
+                    commentDto.RepliedTo = ReplySource.RepliedTo;
+                else
+                    commentDto.RepliedTo = ReplySource.Id;
 
-            
+                Comments.Where(x => x.Id == commentDto.RepliedTo).FirstOrDefault().Replies.Add(commentDto);
+
+            }
+            else
+            {
+                Comments.Insert(0, commentDto);
+            }
+
+            CommentContent = string.Empty;
+            IsReply = false;
+
+
+
+            _post.CommentCount = _post.CommentCount + 1;
+
             StateHasChanged();
 
-            await ApiService.CommentService.CommentOnPost(commentDto);
+            var m = await ApiService.CommentService.CommentOnPost(commentDto);
 
+            if (IsReply == false)
+                Comments[0].Id = m.Id;
         }
 
         IsBusy = false;
@@ -368,6 +417,10 @@ else
         return true;
     }
 
+    private void OpenTele()
+    {
+        Navigation.NavigateTo($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+    }
 
 
 }

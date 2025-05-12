@@ -9,7 +9,7 @@ namespace UnSocial.WebApp.Services
     {
         private HttpClient client;
 
-        private string host = "https://api.toxiq.xyz/api/";
+        private string host = "https://toxiq.xyz/api/";
         private JsonSerializerOptions options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
         public async void SetToken(string token)
         {

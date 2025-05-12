@@ -91,6 +91,15 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.button {
+    background-color: white;
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+}
+
 .btn-primary {
     color: #fff;
     background-color: #1b6ec2;
@@ -145,3 +154,11 @@ a, .btn-link {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+.full-post2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* truncate to 4 lines */
+    -webkit-line-clamp: 3;
+}

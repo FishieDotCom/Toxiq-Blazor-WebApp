@@ -1,7 +1,14 @@
 ﻿window.initializeTelegramWebApp = () => {
+    Telegram.WebApp.headerColor = "#1f1f1f"
+    Telegram.WebApp.backgroundColor = "#1f1f1f"
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
     return Telegram.WebApp.initData;
+};
+
+window.shareToTele = (url) => {
+    const array = ['https://t.me/share?url=',url];
+    Telegram.WebApp.openTelegramLink(array.join(''));
 };
 
 window.showButton = () => {

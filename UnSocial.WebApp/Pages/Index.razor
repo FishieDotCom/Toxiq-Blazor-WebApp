@@ -7,7 +7,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.Text.RegularExpressions
 @using Toxiq.Mobile.Dto
+@using UnSocial.WebApp.Components
 @inject AppState AppState
+
 
 <PageTitle>Toxiq</PageTitle>
 
@@ -22,57 +24,34 @@
     <meta property="og:image:height" content="640" />
 </HeadContent>
 
-<style>
-    .post-content {
-        font-weight: 500;
-        color: white;
-    }
 
-    .max-lines {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        /* truncate to 4 lines */
-        -webkit-line-clamp: 3;
-        margin-bottom: -15px;
-    }
-
-</style>
 
 <MCard Width="500"
         Dark
        Class="overflow-auto"
        Style="margin: 0 auto"
        Id="infinite-scroll-usage">
-    <MList Dark>
+    <MList Dark >
+
+        @if(Posts.Count ==0)
+        {
+
+      
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+            <PostSkeletonComponent Style="margin-bottom : 10px;"></PostSkeletonComponent>
+
+      
+        }
+
         @foreach (var _post in Posts)
         {
-            <MListItem>
-                <MListItemContent>
-                    <MCard Class="mx-auto" Color="@_post.PostColor" Dark MaxWidth="400" style="border-radius:20px" @onclick="()=>VisitPost(_post.Id)">
-                        <MCardTitle style="margin-bottom:-15px;">
-                            <span class="text-h6 font-weight-light">@_post.Name</span>
-                            <span class="text-h6 font-weight-light" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@@</span>
-                            <span class="text-h6" style="opacity: 0.7; font-weight: 300; font-size: smaller;">@_post.UserName</span>
-                        </MCardTitle>
-                        @if (_post.PostMedia.Count != 0)
-                        {
-                            <MImage style="margin-top:15px; padding:5px; margin-right:5px;margin-left:5px;border-radius: 15px;" Src="@_post.PostMedia[0].MediaPath" MaxHeight="512" MaxWidth="512" AspectRatio="1/1d">
-                                <PlaceholderContent>
-                                    <MProgressCircular Indeterminate Align="@AlignTypes.Center" Justify="@JustifyTypes.Center" Class="text-center"></MProgressCircular>
-                                </PlaceholderContent>
-                            </MImage>
-                        }
 
-                        <MCardText>
-                            <p Class="post-content max-lines" style=" white-space: pre-wrap;">@_post.Content</p>
-                             <br>
-                            <p class="text-end" style="margin-bottom:-5px;"> <MIcon Style="opacity:0.8;">mdi-comment-outline</MIcon> <span>@_post.CommentCount</span></p>
-                        </MCardText>
-                    </MCard>
-                </MListItemContent>
-            </MListItem>
-         
+            <div style="margin-bottom : 10px;" @onclick="()=>VisitPost(_post.Id)">
+                <PostComponent _post="@_post" FullPost="false"  />
+           
+               </div>      
         }
     </MList>
     <MInfiniteScroll OnLoad="@OnLoad" Threshold="100"
@@ -99,7 +78,7 @@
         {
             Audience = Audience.All,
             Count = 30,
-            Page = 0,
+            Page = -1,
             Sort = SortType.New,
         };
 
@@ -108,7 +87,13 @@
         if (firstRender)
         {
             AppState.OnChange += StateHasChanged;
-
+            SearchQuary = new GetPostDto
+                {
+                    Audience = Audience.All,
+                    Count = 30,
+                    Page = -1,
+                    Sort = SortType.New,
+                };
             await GetPosts();
         }
     }
@@ -124,8 +109,8 @@
 
     private async Task LoadMore()
     {
-        if (!ApiService.AuthService.IsAuth)
-            return;
+        // if (!ApiService.AuthService.IsAuth)
+        //     return;
 
         IsLoading = true;
         SearchQuary.Page = SearchQuary.Page + 1;

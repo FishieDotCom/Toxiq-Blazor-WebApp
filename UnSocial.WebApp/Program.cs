@@ -1,3 +1,4 @@
+using CurrieTechnologies.Razor.Clipboard;
 using Microsoft.FluentUI.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Unsocial.WebApp.Services;
@@ -24,7 +25,7 @@ namespace UnSocial.WebApp
                     theme.Dark = true;
                 });
             });
-
+            builder.Services.AddClipboard();
             builder.Services.AddHttpClient();
 
             builder.Services.AddFluentUIComponents();
@@ -56,6 +57,29 @@ namespace UnSocial.WebApp
 
             var app = builder.Build();
 
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Value?.Equals("/.well-known/apple-app-site-association", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    var filePath = Path.Combine(app.Environment.WebRootPath, ".well-known", "apple-app-site-association");
+
+                    if (File.Exists(filePath))
+                    {
+                        context.Response.ContentType = "application/json";
+                        await context.Response.SendFileAsync(filePath);
+                        return;
+                    }
+                    else
+                    {
+                        // If the file is missing, return a 404
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        return;
+                    }
+                }
+                await next();
+            });
+
+
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
@@ -76,7 +100,8 @@ namespace UnSocial.WebApp
             app.MapFallbackToPage("/_Host");
 
 #if DEBUG
-            app.Run("http://10.0.10.3:9454");
+            //   app.Run("http://10.0.10.3:9454");
+            app.Run();
 #else
             app.Run();
 #endif

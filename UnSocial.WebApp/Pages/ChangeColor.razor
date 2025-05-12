@@ -13,6 +13,91 @@
 @inject AppState AppState
 
 <style>
+    .date-inputs {
+        display: flex;
+        gap: 10px;
+    }
+
+        .date-inputs .form-select {
+            flex: 1;
+            padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 16px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            appearance: none;
+        }
+
+    .form-select:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    .form-select {
+        display: block;
+        width: 100%;
+        padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 16px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        appearance: none;
+    }
+
+        .form-select:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+    option {
+        padding-left: 25px;
+        position: relative;
+    }
+      .date-selector {
+       
+        padding-bottom: 1rem;
+    }
+    .label-text{
+        padding-top: 1rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+    }
+    .alert {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        border-radius: 0.25rem;
+    }
+    .alert-warning {
+        color: #856404;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+    }
+    .date-range {
+        font-size: 0.9rem;
+        color: #666;
+    }
+
     .center-items {
         display: flex;
         justify-content: center;
@@ -79,6 +164,7 @@
     .button {
         background-color: white;
         padding: 10px 20px;
+        border-radius: 15px;
         border: none;
         font-weight: bold;
         cursor: pointer;
@@ -91,8 +177,13 @@
 
 @if (Profile == null)
 {
-    <MProgressCircular Indeterminate Class="center-items" Size="40" Color="White" Width="4"></MProgressCircular>
-}
+    <div style="max-width: 500px;margin: 0 auto;">
+    <MProgressCircular Indeterminate Class="center-items"
+                       Size="40"
+                       Color="White"
+                       Width="4">
+    </MProgressCircular>
+    </div>}
 else
 {
 
@@ -106,39 +197,62 @@ else
 
         <MCard Flat Dark>
 
-        <MRadioGroup @bind-Value="Profile.ProfileColor" Row>
-                                <MRadio Label="gray"
-                                        Color="#8a8a8a"
-                                        Value="@("#8a8a8a")">
-                                </MRadio>
-                                <MRadio Label="purple"
-                                        Color="#5a189a"
-                                        Value="@("#5a189a")">
-                                </MRadio>
-                                <MRadio Label="red"
-                                        Color="#800e13"
-                                        Value="@("#800e13")">
-                                </MRadio>
+        <label for="label-text">Profile Color</label>
+        <select class="form-select" value="@Profile.ProfileColor" @onchange="HandleColorChange">
+            <option value="">Select Color</option>
+            @foreach (var color in colors)
+            {
+                <option value="@color.Value">@color.Label</option>
+            }
+        </select>
 
-                                <MRadio Label="blue"
-                                        Color="#375191"
-                                        Value="@("#375191")">
-                                </MRadio>
-
-                                <MRadio Label="pink"
-                                        Color="#ff4bb4"
-                                        Value="@("#ff4bb4")">
-                                </MRadio>
-
-                                <MRadio Label="green"
-                    Color="#588157"
-                    Value="@("#588157")">
-                                </MRadio>
-                            </MRadioGroup>
 
         </MCard>
 
+    <label for="label-text">Gender</label>
+    <select class="form-select" value="@Profile.Gender" @onchange="HandleGenderChange">
+        <option value="">Select Gender</option>
+        @foreach (var gender in Enum.GetValues<Gender>().Where(g => g != Gender.Null))
+        {
+            <option value="@gender">@gender</option>
+        }
+    </select>
 
+    <div class="date-selector">
+        <div class="form-group">
+            <label for="label-text">Date of birth</label>
+            <div class="date-inputs">
+                <select class="form-select" @bind="Month">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i">@(new DateTime(2000, i, 1).ToString("MMMM"))</option>
+                    }
+                </select>
+
+                <select class="form-select" @bind="Day">
+                    @for (int i = 1; i <= DateTime.DaysInMonth(Year, Month); i++)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </select>
+
+                <select class="form-select" @bind="Year">
+                    @for (int i = MaxDate.Year; i >= MinDate.Year; i--)
+                    {
+                        <option value="@i">@i</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+
+        @if (!string.IsNullOrEmpty(ValidationMessage))
+        {
+            <div class="alert alert-warning mt-2">
+                @ValidationMessage
+            </div>
+        }
+    </div>
     <button class="button" @onclick="()=>SubmitUsername()" disabled="@IsLoading">
         <span class="button-label">Save</span>
     </button>
@@ -152,6 +266,23 @@ else
     bool IsLoading = false;
     private ElementReference inputElement;
 
+    private DateOnly _date;
+
+    private class ColorOption
+    {
+        public string Label { get; set; }
+        public string Value { get; set; }
+    }
+
+    private ColorOption[] colors = new[]
+    {
+        new ColorOption { Label = "Gray", Value = "#8a8a8a" },
+        new ColorOption { Label = "Purple", Value = "#5a189a" },
+        new ColorOption { Label = "Red", Value = "#800e13" },
+        new ColorOption { Label = "Blue", Value = "#375191" },
+        new ColorOption { Label = "Pink", Value = "#ff4bb4" },
+        new ColorOption { Label = "Green", Value = "#588157" }
+    };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -173,14 +304,134 @@ else
     }
 
 
+    private string DateValidationMessage { get; set; }
+    private bool IsGenderValid => Profile.Gender != Gender.Null;
+    private bool IsColorValid => !string.IsNullOrEmpty(Profile.ProfileColor);
+    private bool IsDateValid => string.IsNullOrEmpty(DateValidationMessage);
+
+
+    public bool ValidateAll()
+    {
+        ValidationMessage = "";
+
+        var messages = new List<string>();
+
+        if (!IsGenderValid)
+            messages.Add("Please select a gender");
+        if (!IsColorValid)
+            messages.Add("Please select a profile color");
+        if (!IsDateValid)
+            messages.Add("Please enter a valid date of birth");
+
+        if (messages.Any())
+        {
+            ValidationMessage = string.Join("\n", messages);
+            return false;
+        }
+
+        return true;
+    }
+
+
     async Task SubmitUsername()
     {
         IsLoading = true;
-        /// Docs
-        /// https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/User.md#edit-user-profile
-        await ApiService.UserService.EditProfile(Profile);
-        Navigation.NavigateTo($"/profile/{Profile.UserName}");
+        if(ValidateAll() == true)
+        {
+            /// Docs
+            /// https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Endpoints/User.md#edit-user-profile
+            await ApiService.UserService.EditProfile(Profile);
+            Navigation.NavigateTo($"/");
+        }
         
         IsLoading = false;
+    }
+
+
+    [Parameter]
+    public DateTime SelectedDate { get; set; } = DateTime.Today;
+
+    [Parameter]
+    public EventCallback<DateTime> SelectedDateChanged { get; set; }
+
+    [Parameter]
+    public DateTime MinDate { get; set; } = new DateTime(1989,1,1);
+
+    [Parameter]
+    public DateTime MaxDate { get; set; } = DateTime.Today.AddYears(1);
+
+    private string ValidationMessage { get; set; } = string.Empty;
+
+
+    private int _month=1;
+    private int Month
+    {
+        get => _month;
+        set
+        {
+            _month = value;
+            UpdateDate();
+        }
+    }
+
+    private int _day=1;
+    private int Day
+    {
+        get => _day;
+        set
+        {
+            _day = value;
+            UpdateDate();
+        }
+    }
+
+    private int _year = DateTime.Today.Year;
+    private int Year
+    {
+        get => _year;
+        set
+        {
+            _year = value;
+            UpdateDate();
+        }
+    }
+
+    private void UpdateDate()
+    {
+        try
+        {
+            // Ensure day is valid for the selected month/year
+            var daysInMonth = DateTime.DaysInMonth(Year, Month);
+            var validDay = Math.Min(Day, daysInMonth);
+
+            var newDate = new DateTime(Year, Month, validDay);
+
+            // Only update if within valid range
+            if (newDate >= MinDate && newDate <= MaxDate)
+            {
+                Profile.PubDateOfBirth = newDate;
+            }
+        }
+        catch
+        {
+            ValidationMessage = $"Please select a date between {MinDate.ToShortDateString()} and {MaxDate.ToShortDateString()}";
+            return;
+        }
+    }
+
+
+    private void HandleGenderChange(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<Gender>(e.Value?.ToString(), out Gender selectedGender))
+        {
+            Profile.Gender = selectedGender;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleColorChange(ChangeEventArgs e)
+    {
+        Profile.ProfileColor = e.Value?.ToString();
+        StateHasChanged();
     }
 }

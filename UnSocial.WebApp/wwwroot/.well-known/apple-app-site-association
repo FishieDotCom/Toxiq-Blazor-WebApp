@@ -1,0 +1,14 @@
+﻿{
+    "activitycontinuation": {
+        "apps": [ "6717608091.com.fishiemv.toxiq" ]
+    },
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "6717608091.com.fishiemv.toxiq",
+                "paths": ["*"]
+            }
+        ]
+    }
+}

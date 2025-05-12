@@ -7,6 +7,7 @@ namespace Unsocial.WebApp.Services.OnlineDataService
     {
         Task<SearchResultDto<BasePost>> GetFeed(GetPostDto filter);
         Task<BasePost> GetPost(Guid postId);
+        Task<BasePost> GetPrompt(Guid postId);
         Task Publish(BasePost post);
         Task Upvote(Guid id);
         Task Downvote(Guid id);
@@ -29,6 +30,11 @@ namespace Unsocial.WebApp.Services.OnlineDataService
         public async Task<BasePost> GetPost(Guid postId)
         {
             return await HttpHandler.GetJsonAsync<BasePost>($"Post/GetPost/{postId}");
+        }
+
+        public async Task<BasePost> GetPrompt(Guid postId)
+        {
+            return await HttpHandler.GetJsonAsync<BasePost>($"Post/GetPrompt/{postId}");
         }
 
         public async Task Publish(BasePost post)

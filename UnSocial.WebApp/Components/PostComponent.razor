@@ -1,29 +1,38 @@
-﻿@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components;
 @using Microsoft.FluentUI.AspNetCore.Components;
+@using System.Web
 @using Toxiq.Mobile.Dto
 @inject NavigationManager Navigation
+@inject IToastService ToastService
+@using CurrieTechnologies.Razor.Clipboard
+@inject ClipboardService clipboard
+@inject IJSRuntime JS
+@inject ITelegramJsInterop telegram
+
 @inject Unsocial.WebApp.Services.IApiService ApiService
 
 
 <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @BottomColor 0%, @TopColor 100%); border-radius: 20px; border: 3px @_post.PostColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
     <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex" @onclick="()=>VisitOP(_post.UserName)">
         <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.Name</div>
-        <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@_post.UserName</div>
+        <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@@@_post.UserName</div>
     </div>
-    <div class="Content" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
+    <div class="Content @(FullPost ? "" : "full-post2")" style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_post.Content</div>
 
     @if (_post.PostMedia.Count != 0)
     {
         <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
-            <img class="Postmedia" style="max-width: 100%; border-radius: 20px" src="@_post.PostMedia[0].MediaPath" />
+            <img class="Postmedia" style="max-width: 100%; max-height:512px; border-radius: 20px" src="@_post.PostMedia[0].MediaPath" />
         </div>
     }
-    @if (_post.ReplyRefId != null)
+    @if (replypost.Content != null)
     {
-        <div class="ReplyCard" style="border-color: #1f1f1f;border-style: solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
+        <div class="ReplyCard" style="border: 1px #1f1f1f solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
             <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
                 <div class="NameSection" style="width: 270px; height: 17px; justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-                    <div class="Username" style="flex: 1 1 0; height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
+                    <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.Name</div>
+
+                    <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@replypost.UserName</div>
                     <div class="AnonIcon" hidden style="width: 17px; height: 17px; justify-content: center; align-items: center; display: flex">
                         <div class="Vector" style="width: 17px; height: 17px; background: white"></div>
                     </div>
@@ -32,38 +41,60 @@
             <div class="Test" style="align-self: stretch; height: 16px; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@replypost.Content</div>
         </div>
     }
-    <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex">
+    <div class="PostInteraction" style="align-self: stretch; justify-content: space-between; align-items: center; display: inline-flex; width:100%;">
         <div class="LikeButton" style="justify-content: flex-start; align-items: center; gap: 5px; display: flex">
-            <div class="UpvoteIcon" style="width: 24px; height: 24px; padding-top: 1px; padding-bottom: 1.82px; padding-left: 3px; padding-right: 3.25px; justify-content: center; align-items: center; display: flex">
-                <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbLike())" />
-            </div>
+            <button class="UpvoteIcon" style="width: 24px; height: 24px; padding: 1px 3.25px 1.82px 3px; justify-content: center; align-items: center; display: flex;  border-radius:10px border: none; cursor: pointer;" @onclick="ToggleLike">               
+                <div>
+                    @if(_post.SupportStatus == true)
+                    {
+                        <svg width="17.75px" height="17.75px" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.057 9.004c.46-1.427.693-2.676.693-3.753 0-2.399-.939-4.248-2.5-4.248-.847 0-1.109.505-1.437 1.747.017-.065-.163.634-.215.821-.101.36-.277.97-.527 1.831a.247.247 0 0 1-.03.065L8.175 9.953A5.885 5.885 0 0 1 5.32 12.28l-1.257.481a1.75 1.75 0 0 0-1.092 1.968l.686 3.538a2.25 2.25 0 0 0 1.673 1.757l8.25 2.022a4.75 4.75 0 0 0 5.733-3.44l1.574-6.173a2.75 2.75 0 0 0-2.665-3.429h-3.165Z" fill="#ffffff" /></svg>
+                    }
+                    else{
+                        <svg width="17.75px" height="17.75px" fill="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 5.202c0-2.442-1.14-4.199-3.007-4.199-1.026 0-1.378.602-1.746 2-.075.289-.112.43-.151.568-.101.359-.277.97-.527 1.831a.25.25 0 0 1-.03.065L8.174 9.953a5.885 5.885 0 0 1-2.855 2.326l-.473.181a2.75 2.75 0 0 0-1.716 3.092l.404 2.086a3.25 3.25 0 0 0 2.417 2.538l7.628 1.87a4.75 4.75 0 0 0 5.733-3.44l1.415-5.55a3.25 3.25 0 0 0-3.15-4.052h-1.822c.496-1.633.746-2.893.746-3.802ZM4.6 15.267a1.25 1.25 0 0 1 .78-1.406l.474-.18a7.385 7.385 0 0 0 3.582-2.92l2.867-4.486c.09-.141.159-.294.205-.455.252-.865.428-1.479.53-1.843.044-.153.085-.308.159-.592.19-.722.283-.882.295-.882.868 0 1.507.984 1.507 2.7 0 .884-.326 2.335-.984 4.314a.75.75 0 0 0 .711.987h2.85a1.751 1.751 0 0 1 1.696 2.182l-1.415 5.55a3.25 3.25 0 0 1-3.923 2.353l-7.628-1.87a1.75 1.75 0 0 1-1.301-1.366L4.6 15.267Z" fill="#ffffff" /></svg>
+                    }
+                </div>
+                @* <FluentIcon hidden style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbLike())" /> *@
+            </button>
             <div style="color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.SupportCount</div>
-            <div class="DownvoteIcon" style="width: 17.75px; height: 21.18px; flex-direction: column; justify-content: center; align-items: center; display: inline-flex">
-                <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.ThumbDislike())" />
-            </div>
+            <button class="DownvoteIcon" style="width: 17.75px; height: 21.18px; flex-direction: column; justify-content: center; align-items: center; display: inline-flex; background: none; border: none; cursor: pointer;" @onclick="ToggleDislike">
+                    @if (_post.SupportStatus == false)
+                    {
+                    <svg width="17.75px" height="17.75px" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.057 14.183c.46 1.427.693 2.676.693 3.753 0 2.399-.939 4.248-2.5 4.248-.8 0-1.078-.45-1.383-1.547l-.27-1.021c-.1-.359-.276-.97-.526-1.831a.246.246 0 0 0-.03-.065l-2.866-4.486a5.886 5.886 0 0 0-2.855-2.327l-1.257-.48A1.75 1.75 0 0 1 2.97 8.458l.686-3.539A2.25 2.25 0 0 1 5.33 3.163l8.25-2.022a4.75 4.75 0 0 1 5.733 3.44l1.574 6.173a2.75 2.75 0 0 1-2.665 3.429h-3.165Z" fill="#ffffff" /></svg>
+                }
+                    else
+                    {
+                        <svg width="17.75px" height="17.75px" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 17.985c0 2.442-1.14 4.198-3.007 4.198-.975 0-1.341-.542-1.69-1.795l-.207-.772c-.101-.359-.277-.97-.527-1.831a.249.249 0 0 0-.03-.065l-2.866-4.486a5.886 5.886 0 0 0-2.855-2.327l-.473-.18A2.75 2.75 0 0 1 3.13 7.634l.404-2.087A3.25 3.25 0 0 1 5.95 3.011l7.628-1.87a4.75 4.75 0 0 1 5.733 3.44l1.415 5.55a3.25 3.25 0 0 1-3.15 4.052h-1.822c.496 1.633.746 2.893.746 3.802ZM4.6 7.92a1.25 1.25 0 0 0 .78 1.405l.474.182a7.385 7.385 0 0 1 3.582 2.92l2.867 4.485c.09.14.159.294.205.454l.552 1.92.212.792c.14.488.21.605.22.605.868 0 1.507-.984 1.507-2.698 0-.885-.326-2.336-.984-4.315a.75.75 0 0 1 .711-.987h2.85a1.751 1.751 0 0 0 1.696-2.182l-1.415-5.55a3.25 3.25 0 0 0-3.923-2.353l-7.628 1.87a1.75 1.75 0 0 0-1.301 1.366L4.6 7.92Z" fill="#ffffff" /></svg>
+                    }                        
+            </button>
         </div>
         <div class="Comments" style="height: 24px; position: relative">
             <div style="left: 29px; top: 3px; position: absolute; color: white; font-size: 14px; font-family: Roboto; font-weight: 700; word-wrap: break-word">@_post.CommentCount</div>
-            <div class="CommentIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px; left: 0px; top: 0px; position: absolute; justify-content: center; align-items: center; display: inline-flex">
+            <div class="CommentIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px; left: 0px; top: 0px;  justify-content: center; align-items: center; display: inline-flex">
                 <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Comment())" />
             </div>
         </div>
-        <div class="EchoIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 3px; padding-left: 3px; padding-right: 2.01px; justify-content: center; align-items: center; display: flex">
+        <div @onclick="ShareClicked" class="EchoIcon" style="width: 24px; height: 24px; padding-top: 3px; padding-bottom: 3px; padding-left: 3px; padding-right: 2.01px; justify-content: center; align-items: center; display: flex">
             <FluentIcon style="width: 17.75px; height: 21.18px; fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Share())" />
 
         </div>
     </div>
 </div>
 
+<BrowserDetect @bind-BrowserInfo="@Info" />
 
 @code {
     [Parameter]
     public BasePost _post { get; set; }
 
+    public BrowserInfo? Info { get; set; }
+
+    [Parameter]
+    public bool FullPost { get; set; } = true;
+
     private string TopColor = "black";
     private string BottomColor = "black";
 
-    private BasePost replypost { get; set; }
+    private BasePost replypost = new();
 
 
     protected override void OnInitialized()
@@ -73,10 +104,12 @@
 
     private async Task LoadPost()
     {
+        replypost.Content = null;
+
         switch (_post.Type)
         {
             case PostType.Burn:
-                TopColor = "black"; BottomColor = _post.PostColor;
+                TopColor = "black"; BottomColor = "black";
                 break;
             case PostType.Wall:
                 TopColor = _post.PostColor; BottomColor = _post.PostColor;
@@ -96,7 +129,9 @@
                 replypost.Content = temp.Content;
                 replypost.UserName = "Anon";
                 replypost.Name = "";
-                //_border.BackgroundColor = _post.PostColor;
+                break;
+            case ReplyType.Prompt:
+                replypost = await ApiService.PostService.GetPrompt((Guid)_post.ReplyRefId);
                 break;
             case ReplyType.Comment:
             // var tempc = await ApiService.CommentService.Getc((Guid)_post.ReplyRefId);
@@ -110,10 +145,90 @@
         }
     }
 
+    public int InitialLikeCount { get; set; } = 0;
 
+    private int LikeCount { get; set; }
+    private bool IsLiked { get; set; } = false;
+    private bool IsDisliked { get; set; } = false;
+
+    private async Task ToggleLike()
+    {
+        if (_post.SupportStatus == true)
+        {
+            _post.SupportStatus = null;
+            _post.SupportCount--;
+        }
+        else
+        {
+            if (_post.SupportStatus == false)
+            {
+                _post.SupportCount++;
+            }
+            _post.SupportStatus = true;
+            _post.SupportCount++;
+        }
+
+
+        _ = ApiService.PostService.Upvote(_post.Id);
+    }
+
+    private async Task ToggleDislike()
+    {
+        if (_post.SupportStatus == false)
+        {
+            _post.SupportStatus = null;
+            _post.SupportCount++;
+
+        }
+        else
+        {
+            if (_post.SupportStatus == true)
+            {
+                _post.SupportCount--;
+            }
+            _post.SupportStatus = false;
+            _post.SupportCount--;
+        }
+
+
+        _ = ApiService.PostService.Downvote(_post.Id);
+    }
 
     private void VisitOP(string username)
     {
-        Navigation.NavigateTo($"/profile/{username}");
+        if (FullPost)
+            Navigation.NavigateTo($"/profile/{HttpUtility.UrlEncode(username)}");
+    }
+
+    async Task ShareClicked()
+    {
+
+        Navigation.NavigateTo($"/posts/{_post.Id}/echo?ReplyType=2");
+
+        // try
+        // {
+        //     await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+        //     ToastService.ShowToast(ToastIntent.Info, "Link copied to clipboard",2000);
+        // }
+        // catch(Exception ex1)
+        // {
+        //     if (Info.IsIPhone == true)
+        //     {
+        //         try
+        //         {
+        //             string shareurl = HttpUtility.UrlEncode($"https://t.me/Toxiq_bot/posts?startapp={_post.Id}");
+        //             await telegram.ShareToTele(shareurl);
+        //         }
+        //         catch
+        //         {
+        //             ToastService.ShowToast(ToastIntent.Error, "this feature is unsupported on your device", 2000);
+        //         }
+        //     }
+        //     else
+        //     {
+
+        //     }
+        // }
+
     }
 }

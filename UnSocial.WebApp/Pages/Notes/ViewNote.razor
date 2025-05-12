@@ -1,0 +1,194 @@
+﻿@page "/notes/view/{NoteId:guid}"
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.RegularExpressions
+@using Toxiq.Mobile.Dto
+@inject IToastService ToastService
+@inject NavigationManager Navigation
+@inject Unsocial.WebApp.Services.IApiService ApiService
+@inject ITelegramJsInterop telegram
+@inject IJSRuntime JSRuntime
+@using System.Web;
+@using UnSocial.WebApp.Components
+@inherits ComponentBase
+@inject AppState AppState
+@using Microsoft.FluentUI.AspNetCore.Components;
+
+<PageTitle>Toxiq</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="Where Cool Kids Hangout">
+    <meta name="og:description" content="Where Cool Kids Hangout">
+    <meta name="og:title" content="Toxiq">
+    <meta property="og:site_name" content="Toxiq">
+    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-post.jpg">
+    <meta property="og:image:width" content="1280" />
+    <meta property="og:image:height" content="640" />
+</HeadContent>
+
+
+<style>
+
+    .post-content {
+        font-weight: 500;
+        color: white;
+    }
+
+    .comment-container {
+        width: 100%;
+        background-color: #1f1f1f;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .comment-input {
+        background: transparent;
+        align-self: stretch;
+        height: auto;
+        padding: 10px;
+        color: white;
+        border: 0px solid #282828;
+        border-radius: 15px;
+    }
+
+    .help-text {
+        font-size: 14px;
+        text-align: left;
+        margin-top: 15px;
+    }
+
+
+    .content {
+        padding-bottom: 70px; /* To ensure the content doesn't overlap the input */
+    }
+</style>
+
+@if (myProfile.Name != "NA")
+{
+
+    <div style="max-width: 500px;margin: 0 auto;gap:15px">
+        <div class="TypeBurnPost" style="clip-path: border-box;min-width: 100%; padding: 15px; background: linear-gradient(0deg, @BottomColor 0%, @TopColor 100%); border-radius: 20px; border: 3px @myProfile.ProfileColor solid; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; display: inline-flex">
+            <div class="NameSection" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
+                <div style=" height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@myProfile.Name</div>
+                <div class="Username" style="color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@myProfile.UserName</div>
+            </div>
+            <textarea type="text" disabled="@IsBusy" placeholder="Write a Response..." class="comment-input" autocomplete="off" id="commentInput" @bind="Response" />
+
+
+            <div class="ReplyCard" style="border-color: #1f1f1f;border-style: solid;align-self: normal;padding: 10px; background: @BottomColor; box-shadow: 0px 2px 20px rgba(0, 0, 0, 0.25); border-radius: 10px; overflow: hidden; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 5px; display: flex">
+                <div class="Header" style="width: 270px; justify-content: flex-start; align-items: flex-start; display: inline-flex">
+                    <div class="NameSection" style="width: 270px; height: 17px; justify-content: flex-start; align-items: center; gap: 5px; display: flex">
+                        <div class="Username" style="flex: 1 1 0; height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">ANON</div>
+                        <div class="AnonIcon" hidden style="width: 17px; height: 17px; justify-content: center; align-items: center; display: flex">
+                            <div class="Vector" style="width: 17px; height: 17px; background: white"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="Test" style="align-self: stretch; height: 16px; color: white; font-size: 14px; font-family: Roboto; font-weight: 500; word-wrap: break-word">@_note.Content</div>
+            </div>
+        </div>
+
+        @if (HasError)
+        {
+            <div class="help-text">@ErrorText</div>
+        }
+
+        <button @onclick="()=>RespondNote()" class="button" style="width:100%;margin-top:15px">
+            <span style="color:black;">Respond</span>
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid NoteId { get; set; }
+
+    string Response { get; set; }
+
+    private NoteDto _note { get; set; }
+
+
+    private UserProfile myProfile = new UserProfile { Name = "NA" };
+
+
+    private bool IsBusy = false;
+    private ElementReference inputElement;
+    private double initialWindowHeight;
+
+    private string TopColor = "black";
+    private string BottomColor = "black";
+    bool HasError = false;
+    string ErrorText;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            AppState.OnChange += LoadProfile;
+
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+
+            /// Docs
+            /// https://github.com/FishieDotCom/Toxiq-API-Docs/blob/main/Docs/Posts.md#tg-url
+            /// this code is to handle the edge case to get postid when opening via telegram
+            /// https://docs.telegram-mini-apps.com/platform/start-parameter
+            try
+            {
+                NoteId = Guid.Parse(query["tgWebAppStartParam"]);
+            }
+            catch
+            { }
+
+            _note = await ApiService.NotesService.GetNote(NoteId);
+
+            StateHasChanged();
+
+        }
+    }
+
+    async void LoadProfile()
+    {
+        myProfile = await ApiService.UserService.GetMe();
+        StateHasChanged();
+    }
+
+    async void RespondNote()
+    {
+        if (string.IsNullOrWhiteSpace(Response))
+        {
+            IsBusy = true;
+            HasError = true;
+            ErrorText = "Note is empty!";
+            IsBusy = false;
+            return;
+        }
+        else
+        {
+            IsBusy = true;
+
+            BasePost reply = new BasePost
+            {
+                IsSpoiler =false,
+                IsAd = false,
+                Content = Response,
+                ReplyType = ReplyType.Note,
+                Type = PostType.Reply,
+                ReplyRefId = NoteId,
+            };
+
+            await ApiService.NotesService.RespondToNote(reply);
+
+            await telegram.Close();
+            IsBusy = false;
+        }
+
+        StateHasChanged();
+
+    }
+
+    public void Dispose()
+    {
+        AppState.OnChange -= StateHasChanged;
+    }
+
+}

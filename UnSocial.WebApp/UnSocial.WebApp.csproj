@@ -6,11 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="OpenAPIs\swagger.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CurrieTechnologies.Razor.Clipboard" Version="1.6.0" />
     <PackageReference Include="Masa.Blazor" Version="1.6.6" />
     <PackageReference Include="Microsoft.Extensions.ApiDescription.Client" Version="7.0.2">
       <PrivateAssets>all</PrivateAssets>
@@ -24,6 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="PSC.Blazor.Components.BrowserDetect" Version="1.0.14" />
   </ItemGroup>
 
   <ItemGroup>
