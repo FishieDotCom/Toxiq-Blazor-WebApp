@@ -21,7 +21,7 @@
         input = Regex.Replace(input, urlPattern, m => $"<a href='{m.Value}' target='_blank' rel='noopener noreferrer'>{m.Value}</a>");
         // Convert mentions (@username)
         string mentionPattern = @"@(\w+)";
-        input = Regex.Replace(input, mentionPattern, m => $"<span class='mention' style='color:var(--accent-color);cursor:pointer' onclick=\"window.dispatchEvent(new CustomEvent('mention-click',{detail:'{m.Groups[1].Value}'}))\">{m.Value}</span>");
+        input = Regex.Replace(input, mentionPattern, m => $"<span class='mention' style='color:var(--accent-color);cursor:pointer' onclick=\"window.dispatchEvent(new CustomEvent('mention-click',{{detail:'{m.Groups[1].Value}'}}))\">{m.Value}</span>");
         // Convert hashtags (#hashtag)
         string hashtagPattern = @"#(\w+)";
         input = Regex.Replace(input, hashtagPattern, m => $"<span class='hashtag' style='color:var(--accent-color);'>{m.Value}</span>");
