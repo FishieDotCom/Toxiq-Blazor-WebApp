@@ -14,8 +14,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh; /* This makes the div take up the full viewport height */
-        border: 1px solid black; /* Just to see the div's boundaries */
+        height: 100vh;
+        border: 1px solid black;
     }
 
     .button {
@@ -25,7 +25,13 @@
         border: none;
         font-weight: bold;
         cursor: pointer;
+        transition: opacity 0.3s ease;
     }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
     .container {
         padding: 30px;
@@ -58,6 +64,12 @@
         text-align: center;
     }
 
+    .success-text {
+        color: green;
+        font-size: 14px;
+        text-align: center;
+    }
+
     .button-container {
         grid-row: 2;
         margin-top: 30px;
@@ -67,49 +79,64 @@
     .button-label {
         color: black;
     }
+
+    .loading-text {
+        color: white;
+    }
 </style>
 
 @if (!ApiService.AuthService.IsAuth)
 {
     <div style="max-width: 500px;margin: 0 auto;">
-    <MProgressCircular Indeterminate Class="center-items"
-                       Size="40"
-                       Color="White"
-                       Width="4">
-    </MProgressCircular>
+        <MProgressCircular Indeterminate Class="center-items"
+                           Size="40"
+                           Color="White"
+                           Width="4">
+        </MProgressCircular>
     </div>
 }
 else
 {
     <div class="container">
-        <InputText class="text-input" placeholder="Username" maxlength="15" @bind-Value="Profile.UserName"  />
-        
-        @if(HasError)
+        <InputText class="text-input" placeholder="Username" maxlength="15" @bind-Value="Profile.UserName" disabled="@IsLoading" />
+
+        @if (HasError)
         {
-            <div class="help-text" >@ErrorText</div>
+            <div class="help-text">@ErrorText</div>
         }
+        @if (ShowSuccess)
+        {
+            <div class="success-text">Username changed successfully! Redirecting...</div>
+        }
+
         <div class="button-container" @ref="inputElement">
             <button class="button" @onclick="()=>SubmitUsername()" disabled="@IsLoading">
-                <span class="button-label">Set Username</span>
+                @if (IsLoading)
+                {
+                    <span class="loading-text">Setting Username...</span>
+                }
+                else
+                {
+                    <span class="button-label">Set Username</span>
+                }
             </button>
         </div>
     </div>
 }
 
 @code {
-    public UserProfile Profile;
+    public UserProfile Profile = new UserProfile();
     bool HasError = false;
-    string ErrorText;
+    bool ShowSuccess = false;
+    string ErrorText = "";
     bool IsLoading = false;
     private ElementReference inputElement;
 
-
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
-            AppState.OnChange += LoadProfile;       
+            AppState.OnChange += LoadProfile;
         }
     }
 
@@ -119,46 +146,70 @@ else
         StateHasChanged();
     }
 
-
     async Task SubmitUsername()
     {
+        // Reset states
+        HasError = false;
+        ShowSuccess = false;
+        ErrorText = "";
+
+        // Get latest profile
         Profile = await ApiService.UserService.GetMe();
         await inputElement.FocusAsync();
+
+        // Set loading state
         IsLoading = true;
-        if (Validate())
+        StateHasChanged(); // Force UI update to show loading state
+
+        try
         {
-
-            var available = await ApiService.UserService.CheckUsername(Profile.UserName);
-            if (!available)
+            if (Validate())
             {
-                HasError = true;
-                ErrorText = "Username unavailable";
-            }
-            else
-            {
-                var result = await ApiService.UserService.ChangeUsername(Profile.UserName);
-                if (result)
+                var available = await ApiService.UserService.CheckUsername(Profile.UserName);
+                if (!available)
                 {
-                    await telegram.Close();
-                    //Navigation.NavigateTo("/changeColor");
-                    //return;
+                    HasError = true;
+                    ErrorText = "Username unavailable";
                 }
+                else
+                {
+                    var result = await ApiService.UserService.ChangeUsername(Profile.UserName);
+                    if (result)
+                    {
+                        // Show success message briefly
+                        ShowSuccess = true;
+                        StateHasChanged();
 
-                HasError = true;
-                ErrorText = "Username unavailable";
+                        // Navigate to change color page
+                        Navigation.NavigateTo("/changeColor");
+                        return;
+                    }
+                    else
+                    {
+                        HasError = true;
+                        ErrorText = "Failed to change username. Please try again.";
+                    }
+                }
             }
         }
-        IsLoading = false;
+        catch (Exception ex)
+        {
+            HasError = true;
+            ErrorText = "An error occurred. Please try again.";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
     }
 
     bool Validate()
     {
-
-        if(Profile.UserName.StartsWith("user"))
+        if (Profile.UserName.StartsWith("user"))
         {
             HasError = true;
             ErrorText = "Invalid Username";
-
             return false;
         }
 
@@ -166,7 +217,6 @@ else
         {
             HasError = true;
             ErrorText = "Username must be between 4-15 characters";
-
             return false;
         }
         else
@@ -184,7 +234,6 @@ else
             {
                 HasError = true;
                 ErrorText = "Username can only contain alphanumeric characters, Thaana and  _";
-
                 return false;
             }
         }
