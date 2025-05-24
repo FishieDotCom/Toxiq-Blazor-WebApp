@@ -19,7 +19,7 @@
     <meta property="og:site_name" content="Toxiq">
     
     <meta name="og:title" content="Toxiq">
-    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-default.jpg">
+    <meta name="og:image" content="https://toxiq.xyz/images/social-preview-default.jpg">
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="640" />
 </HeadContent>
@@ -49,7 +49,7 @@
         {
 
             <div style="margin-bottom : 10px;" @onclick="()=>VisitPost(_post.Id)">
-                <PostComponent _post="@_post" FullPost="false"  />
+                <PostComponentV2 _post="@_post" FullPost="false" />
            
                </div>      
         }

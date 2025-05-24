@@ -21,7 +21,7 @@
     <meta name="og:description" content="Where Cool Kids Hangout">
     <meta name="og:title" content="Toxiq">
     <meta property="og:site_name" content="Toxiq">
-    <meta name="og:image" content="https://api.toxiq.xyz/images/social-preview-post.jpg">
+    <meta name="og:image" content="https://toxiq.xyz/images/social-preview-post.jpg">
     <meta property="og:image:width" content="1280" />
     <meta property="og:image:height" content="640" />
 </HeadContent>
@@ -74,7 +74,7 @@
     }
     else
     {
-        <PostComponent _post="@_post" FullPost="true" />
+        <PostComponentV2 _post="@_post" FullPost="true" />
 
         <div class="content" @ref="inputElement">
             @if (Comments == null)
@@ -113,45 +113,15 @@
                 <div style="gap:15px; display:flex;flex-direction:column;margin-top:15px;">
                     @foreach (var item in Comments)
                     {
-                        <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex">
-                            <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
-                                <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
-                                    <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(item)">@item.Name</div>
-                                    <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">#@item.UserName</div>
-                                </div>
-                                <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReply(item)">
-                                    <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)item.Content)</span>
-                                </div>
-
-                                @if (item.PostMedia !=null)
-                                {
-                                    <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
-                                        <img class="Postmedia" style="max-width: 100%; max-height:100px; border-radius: 20px" src="@item.PostMedia.MediaPath" />
-                                    </div>
-                                }
-                            </div>
-                        </div>
+                        <CommentComponent CommentData="item"
+                                OnReply="() => InitReply(item)"
+                                IsReply="false" />
 
                         @foreach (var reply in item.Replies)
                         {
-                            <div class="TypeDefault" style="justify-content: flex-start; align-items: flex-start;  display: inline-flex;margin-left: 30px;">
-                                <div class="Frame1" style="padding: 15px; background: #282828; border-radius: 25px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 8px; display: flex;border: #343434 solid 1px;">
-                                    <div class="NameSection" style="height: 18px; justify-content: flex-start; align-items: center; gap: 5px; display: inline-flex">
-                                        <div style="height: 14px; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>AppendMention(reply)">@reply.Name</div>
-                                        <div class="Username" style="height: 18px; color: rgba(255, 255, 255, 0.60); font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item, reply.UserName)">#@reply.UserName</div>
-                                    </div>
-                                    <div class="Content" style="color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word" @onclick="()=>InitReplyWithMention(item,reply.UserName)">
-                                        <span style="white-space: pre-wrap;align-self: stretch; color: white; font-size: 14px; font-family: Roboto; font-weight: 400; word-wrap: break-word">@((MarkupString)reply.Content)</span>
-                                    </div>
-
-                                    @if (reply.PostMedia != null)
-                                    {
-                                        <div class="Postmedia" style=" flex-direction: column; justify-content: center; align-items: center; display: flex;width: -webkit-fill-available;">
-                                            <img class="Postmedia" style="max-width: 100%; max-height:100px; border-radius: 20px" src="@reply.PostMedia.MediaPath" />
-                                        </div>
-                                    }
-                                </div>
-                            </div>
+                            <CommentComponent CommentData="reply"
+                                    OnReply="() => InitReplyWithMention(item, reply.UserName)"
+                                    IsReply="true" />
                         }
                     }
                 </div>

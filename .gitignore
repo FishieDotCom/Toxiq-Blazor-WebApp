@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Ignore Toxiq-Web2025-master folder
+Toxiq-Web2025-master/

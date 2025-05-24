@@ -1,0 +1,51 @@
+@using Microsoft.AspNetCore.Components
+@using System.Text.RegularExpressions
+
+@if (!string.IsNullOrEmpty(Text))
+{
+    <span>@((MarkupString)Format(Text))</span>
+}
+
+@code {
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnMentionClick { get; set; }
+
+    private string Format(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return "";
+        // Convert URLs
+        string urlPattern = @"(https?:\/\/[^\s]+)";
+        input = Regex.Replace(input, urlPattern, m => $"<a href='{m.Value}' target='_blank' rel='noopener noreferrer'>{m.Value}</a>");
+        // Convert mentions (@username)
+        string mentionPattern = @"@(\w+)";
+        input = Regex.Replace(input, mentionPattern, m => $"<span class='mention' style='color:var(--accent-color);cursor:pointer' onclick=\"window.dispatchEvent(new CustomEvent('mention-click',{{detail:'{m.Groups[1].Value}'}}))\">{m.Value}</span>");
+        // Convert hashtags (#hashtag)
+        string hashtagPattern = @"#(\w+)";
+        input = Regex.Replace(input, hashtagPattern, m => $"<span class='hashtag' style='color:var(--accent-color);'>{m.Value}</span>");
+        return input;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var dotNetRef = DotNetObjectReference.Create(this);
+            JS.InvokeVoidAsync("window.addEventListener", "mention-click", EventCallback.Factory.Create<string>(this, HandleMentionClick));
+        }
+    }
+
+    [Inject]
+    private IJSRuntime JS { get; set; }
+
+    [JSInvokable]
+    public async Task HandleMentionClick(string username)
+    {
+        if (OnMentionClick.HasDelegate)
+        {
+            await OnMentionClick.InvokeAsync(username);
+        }
+    }
+}

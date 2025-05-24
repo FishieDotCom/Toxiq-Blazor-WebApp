@@ -1,0 +1,164 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using System.Collections.ObjectModel
+@using UnSocial.WebApp.Services
+@using Toxiq.Mobile.Dto
+@using Unsocial.WebApp.Services
+
+<div class="@($"comment {(IsReply ? "reply" : "")}")"
+     style="@($"padding-left: {(IsReply ? "15px" : "0")}; margin-left: {(IsReply ? "10px" : "0")}; border-left: {(IsReply ? "2px solid rgba(255, 255, 255, 0.2)" : "none")}; margin-bottom: 10px;")">
+    <div class="comment-content" style="padding: 10px; background-color: var(--off-black); border-radius: 8px; border: 0px solid var(--border-color);">
+        <!-- Header - Username and name -->
+        <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+            <span style="font-weight: normal">@Name</span>
+            <span style="opacity: 0.6; font-weight: bold; cursor: pointer" @onclick="() => NavigateToProfile(UserName)">
+                @($"@{UserName}")
+            </span>
+        </div>
+
+        <!-- Comment media/image if present -->
+        @if (PostMedia != null && !string.IsNullOrEmpty(PostMedia.MediaPath))
+        {
+            <div style="margin-top: 10px; margin-bottom: 10px;">
+                <img src="@PostMedia.MediaPath" alt="Comment media" style="max-width: 128px; max-height: 128px;" />
+            </div>
+        }
+
+        <!-- Comment text -->
+        @if (!string.IsNullOrEmpty(Content))
+        {
+            <div style="margin-top: 5px; margin-bottom: 10px; line-height: 1.2; opacity: 0.9; word-break: break-word;">
+                <FormattedText Text="@Content" />
+            </div>
+        }
+
+        <!-- Interaction row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; opacity: 0.8; font-size: 12px;">
+            <div>
+                <span style="opacity: 0.4">@FormatTimestamp(DateCreated)</span>
+                @if (!IsReply)
+                {
+                    <button @onclick="() => OnReply.InvokeAsync(this.CommentData)" style="background: none; border: none; color: var(--accent-color); margin-left: 10px; cursor: pointer; font-size: 12px;">
+                        Reply
+                    </button>
+                }
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <SupportButtons SupportStatus="SupportStatus"
+                               SupportCount="SupportCount"
+                               OnUpvote="HandleLike"
+                               OnDownvote="HandleDislike"
+                               Variant="comment" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Replies section -->
+    @if (!IsReply && ReplyCount > 0)
+    {
+        <div style="margin-top: 5px; margin-left: 10px;">
+            <button @onclick="() => ShowReplies = !ShowReplies"
+                    style="background: none; border: none; color: var(--accent-color); padding: 5px; cursor: pointer; font-size: 12px;">
+                @(ShowReplies ? "Hide Replies" : $"Show Replies ({ReplyCount})")
+            </button>
+
+            @if (ShowReplies && Replies != null)
+            {
+                <div class="replies" style="margin-top: 5px;">
+                    @foreach (var reply in Replies)
+                    {
+                        <Comment CommentData="reply"
+                                 OnReply="() => OnReply.InvokeAsync(this)"
+                                 IsReply="true" />
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public Comment CommentData { get; set; }
+
+    [Parameter]
+    public EventCallback<Comment> OnReply { get; set; }
+
+    [Parameter]
+    public bool IsReply { get; set; }
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; }
+
+    [Inject]
+    private IApiService ApiService { get; set; }
+
+    private bool ShowReplies { get; set; }
+    private bool? SupportStatus => CommentData?.SupportStatus;
+    private int SupportCount => CommentData?.SupportCount ?? 0;
+    private string Id => CommentData?.Id.ToString();
+    private string UserName => CommentData?.UserName;
+    private string Name => CommentData?.Name;
+    private string Content => CommentData?.Content;
+    private DateTime DateCreated => CommentData?.DateCreated ?? DateTime.Now;
+    private int ReplyCount => CommentData?.ReplyCount ?? 0;
+    private ObservableCollection<Comment> Replies => CommentData?.Replies ?? new ObservableCollection<Comment>();
+    private MediaDto PostMedia => CommentData?.PostMedia;
+
+    private string FormatContent(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        return text.Replace("#(\\w+)", "@$1");
+    }
+
+    private string FormatTimestamp(DateTime dateTime)
+    {
+        var now = DateTime.Now;
+        var diffMs = now - dateTime;
+        var diffSec = Math.Round(diffMs.TotalSeconds);
+        var diffMin = Math.Round(diffMs.TotalMinutes);
+        var diffHour = Math.Round(diffMs.TotalHours);
+        var diffDay = Math.Round(diffMs.TotalDays);
+
+        if (diffSec < 60) return "just now";
+        if (diffMin < 60) return $"{diffMin}m ago";
+        if (diffHour < 24) return $"{diffHour}h ago";
+        if (diffDay < 30) return $"{diffDay}d ago";
+
+        return dateTime.ToLocalTime().ToShortDateString();
+    }
+
+    private void NavigateToProfile(string userName)
+    {
+        NavigationManager.NavigateTo($"/profile/{userName}");
+    }
+
+    private async Task HandleLike()
+    {
+        try
+        {
+            await ApiService.CommentService.Upvote(Guid.Parse(Id));
+            CommentData.SupportCount++;
+            CommentData.SupportStatus = true;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error liking comment: {ex.Message}");
+        }
+    }
+
+    private async Task HandleDislike()
+    {
+        try
+        {
+            await ApiService.CommentService.Downvote(Guid.Parse(Id));
+            CommentData.SupportCount--;
+            CommentData.SupportStatus = false;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error disliking comment: {ex.Message}");
+        }
+    }
+}

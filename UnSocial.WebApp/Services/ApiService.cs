@@ -33,11 +33,11 @@ namespace Unsocial.WebApp.Services
             NotesService = new NotesService(handler);
         }
 
+        public INotesService NotesService { get; set; }
         public IAuthService AuthService { get; set; }
         public IColorService ColorService { get; set; }
         public IPostService PostService { get; set; }
         public IUserService UserService { get; set; }
-        public INotesService NotesService { get; set; }
         public ICommentService CommentService { get; set; }
     }
 }

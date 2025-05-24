@@ -1,0 +1,177 @@
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components
+@using System.Web
+@inject NavigationManager Navigation
+@inject IToastService ToastService
+@inject Unsocial.WebApp.Services.IApiService ApiService
+
+<div class="post-container" style="border-radius: 0px; margin: 0; overflow: hidden; background-color: var(--off-black); color: var(--text-color)" @onclick="HandlePostClick">
+    <div style="padding: 12px">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px">
+            <div style="display: flex; align-items: center; gap: 8px" @onclick="HandleProfileClick" @onclick:stopPropagation>
+                <span style="font-size: 16px">@(_post.Name)</span>
+                <span style="font-weight: bold; cursor: pointer">@@@(_post.UserName)</span>
+            </div>
+            @if (_post.Type == PostType.Burn)
+            {
+                <span>🔥🔥</span>
+            }
+        </div>
+
+        <!-- Content -->
+        <div>
+            <p style="font-size: 17px; line-height: 1.2; white-space: pre-wrap; overflow: hidden; text-overflow: ellipsis; max-height: @(FullPost ? "none" : "200px")">
+                @_post.Content
+            </p>
+
+            <!-- Post Media (Image) -->
+            @if (_post.PostMedia != null && _post.PostMedia.Count > 0)
+            {
+                <img src="@_post.PostMedia[0].MediaPath"
+                     alt="Post attachment"
+                     style="max-width: 100%; border-radius: 8px; margin-top: 8px; max-height: 512px" />
+            }
+
+            <!-- Reply content if exists -->
+            @if (replyPost.Content != null)
+            {
+                <div style="margin-top: 8px; background: rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px">
+                    <div style="display: flex; gap: 8px; margin-bottom: 4px">
+                        <span style="font-size: 14px">@replyPost.Name</span>
+                        <span style="color: rgba(255, 255, 255, 0.6)">@@@replyPost.UserName</span>
+                    </div>
+                    <p style="margin: 0; font-size: 14px">@replyPost.Content</p>
+                </div>
+            }
+        </div>
+
+        <!-- Stats -->
+        <div style="display: flex; justify-content: space-between; margin-top: 12px; opacity: 0.7; font-size: 11px">
+            <span>@SupportCount Likes</span>
+            <span>@(_post.CommentCount) Comments</span>
+        </div>
+
+        <!-- Action buttons -->
+        <div style="display: flex; justify-content: space-between; margin-top: 10px; gap: 15px; height: 33px">
+            <!-- Like/Dislike buttons -->
+            <SupportButtons 
+                SupportStatus="@SupportStatus"
+                SupportCount="@_post.SupportCount"
+                OnUpvote="@HandleUpvote"
+                OnDownvote="@HandleDownvote"
+                Variant="post"
+                ShowCount="false" />
+
+            <!-- Comment button -->
+            <button @onclick="HandlePostClick" @onclick:stopPropagation
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; background-color: rgba(255, 255, 255, 0.1); border: none; border-radius: 15px; padding: 0px; cursor: pointer; color: white">
+                <FluentIcon style="fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Comment())" />
+                <span style="font-weight: bold">Comment</span>
+            </button>
+
+            <!-- Share button -->
+            <button @onclick="HandleShare" @onclick:stopPropagation
+                    style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; background-color: rgba(255, 255, 255, 0.1); border: none; border-radius: 15px; padding: 0px; cursor: pointer; color: white">
+                <FluentIcon style="fill: white" Value="@(new Microsoft.FluentUI.AspNetCore.Components.Icons.Regular.Size24.Share())" />
+                <span style="font-weight: bold">Share</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Separator -->
+    <div style="height: 1px; background-color: rgba(255, 255, 255, 0.3); opacity: 0.3"></div>
+</div>
+
+@code {
+    [Parameter]
+    public BasePost _post { get; set; }
+
+    [Parameter]
+    public bool FullPost { get; set; } = false;
+
+    private BasePost replyPost = new();
+    private bool? SupportStatus;
+    private int? SupportCount;
+
+    protected override void OnInitialized()
+    {
+        SupportStatus = _post.SupportStatus;
+        SupportCount = _post.SupportCount;
+        LoadReplyPost();
+    }
+
+    private async Task LoadReplyPost()
+    {
+        if (_post.ReplyRefId == null) return;
+
+        switch (_post.ReplyType)
+        {
+            case ReplyType.Text:
+                replyPost = await ApiService.PostService.GetPost((Guid)_post.ReplyRefId);
+                break;
+            case ReplyType.Note:
+                var note = await ApiService.NotesService.GetNote((Guid)_post.ReplyRefId);
+                replyPost.Content = note.Content;
+                replyPost.UserName = "Anon";
+                replyPost.Name = "";
+                break;
+            case ReplyType.Prompt:
+                replyPost = await ApiService.PostService.GetPrompt((Guid)_post.ReplyRefId);
+                break;
+        }
+    }
+
+    private async Task HandleUpvote()
+    {
+        if (SupportStatus != true)
+        {
+            SupportCount++;
+            if (SupportStatus == false) SupportCount++;
+            SupportStatus = true;
+            await ApiService.PostService.Upvote(_post.Id);
+        }
+        else
+        {
+            SupportCount--;
+            SupportStatus = null;
+            await ApiService.PostService.Downvote(_post.Id);
+        }
+    }
+
+    private async Task HandleDownvote()
+    {
+        if (SupportStatus != false)
+        {
+            SupportCount--;
+            if (SupportStatus == true) SupportCount--;
+            SupportStatus = false;
+            await ApiService.PostService.Downvote(_post.Id);
+        }
+        else
+        {
+            SupportCount++;
+            SupportStatus = null;
+            await ApiService.PostService.Upvote(_post.Id);
+        }
+    }
+
+    private void HandlePostClick()
+    {
+        if (!FullPost)
+        {
+            Navigation.NavigateTo($"/posts/{_post.Id}");
+        }
+    }
+
+    private void HandleProfileClick()
+    {
+        Navigation.NavigateTo($"/profile/{HttpUtility.UrlEncode(_post.UserName)}");
+    }
+
+    private void HandleShare()
+    {
+        Navigation.NavigateTo($"/posts/{_post.Id}/echo?ReplyType=2");
+    }
+}
